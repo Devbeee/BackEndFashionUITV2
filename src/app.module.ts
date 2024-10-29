@@ -11,6 +11,9 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 
 import { DatabaseModule } from '@/database/database.module';
 
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/user/user.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,11 +23,13 @@ import { DatabaseModule } from '@/database/database.module';
       transport: {
         host: process.env.EMAIL_HOST,
         port: +process.env.EMAIL_PORT,
-        ignoreTLS: true,
         secure: false,
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS,
+        },
+        tls: {
+          rejectUnauthorized: false,
         },
       },
       defaults: {
@@ -45,6 +50,8 @@ import { DatabaseModule } from '@/database/database.module';
       },
     ]),
     DatabaseModule,
+    AuthModule,
+    UsersModule,
   ],
 
   providers: [
