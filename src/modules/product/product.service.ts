@@ -44,6 +44,6 @@ export class ProductService {
       throw new NotFoundException(`Product #${id} not found`);
     }
 
-    return await this.productRepository.delete(product);  
+    return await this.productRepository.remove(product);  
   }
 }
