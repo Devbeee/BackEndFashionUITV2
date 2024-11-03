@@ -16,12 +16,19 @@ export class ContactService {
   }
 
   async findAll() {
-    return await this.contactRepository.find();
+    return await this.contactRepository.find({
+      relations: {
+        user: true
+      }
+    });
   }
 
   async findOne(id: string) {
     return await this.contactRepository.findOne({
-      where: { id }
+      where: { id },
+      relations: {
+        user: true
+      }
     });
   }
 
