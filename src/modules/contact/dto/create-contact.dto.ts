@@ -21,4 +21,9 @@ export class CreateContactDto {
     @IsString({ message: 'Description must be a string' })
     @IsNotEmpty({ message: 'Description is required' })
     description: string;
+
+    @ApiProperty()
+    @IsString({ message: 'User ID must be a string' })
+    @IsNotEmpty({ message: 'User ID is required' })
+    userId: string;
 }
