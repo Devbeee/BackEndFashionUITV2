@@ -54,10 +54,10 @@ export class CategoryService {
 
   async update(id: string, categoryData: UpdateCategoryDto) {
     const existedCategory = await this.categoryRepository.findOne({
-      where: { id: id }
+      where: { gender: categoryData.gender, type: categoryData.type }
     });
-    if (!existedCategory) {
-      throw new Error(ErrorCode.CATEGORY_NOT_FOUND)
+    if (existedCategory) {
+      throw new Error(ErrorCode.CATEGORY_ALREADY_EXIST)
     } else {
       return await this.categoryRepository.update(id, {
         gender: categoryData.gender,
@@ -79,17 +79,17 @@ export class CategoryService {
   }
 
   async removeMultiple(ids: string[]) {
-    const categories =  await this.categoryRepository.findBy({ id: In(ids) });
-  
+    const categories = await this.categoryRepository.findBy({ id: In(ids) });
+
     const foundIds = categories.map(category => category.id);
     const missingIds = ids.filter(id => !foundIds.includes(id));
-  
+
     if (missingIds.length > 0) {
       throw new Error(`${ErrorCode.CATEGORY_NOT_FOUND}: Missing category IDs - ${missingIds.join(', ')}`);
     }
-  
+
     await this.categoryRepository.softRemove(categories);
-  
+
     const deletedAtTimestamps = categories.map(category => category.deletedAt);
     return deletedAtTimestamps;
   }

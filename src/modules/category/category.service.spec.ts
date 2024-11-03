@@ -158,6 +158,29 @@ describe('CategoryService', () => {
         new Error(ErrorCode.CATEGORY_NOT_FOUND)
       );
     })
+
+    it('should throw an error if gender and type already exist ', async () => {
+      const categoryId = '1'
+      const categoryData : UpdateCategoryDto = {
+        gender: 'nam',
+        type: '123'
+      };
+
+      mockCategoryRepository.findOne.mockResolvedValue({
+        id: '2',
+        gender: 'nam',
+        type: '123',
+      });
+
+      await expect(service.update(categoryId, categoryData)).rejects.toThrow(
+        new Error(ErrorCode.CATEGORY_ALREADY_EXIST)
+      );
+    
+      expect(mockCategoryRepository.findOne).toHaveBeenCalledWith({
+        where: { gender: categoryData.gender, type: categoryData.type },
+      });
+    })
+
     it('should update the category if it exists', async () => {
       const existingCategory = { id: '1', gender: 'female', type: 'dress' };
       mockCategoryRepository.findOne.mockResolvedValue(existingCategory);
