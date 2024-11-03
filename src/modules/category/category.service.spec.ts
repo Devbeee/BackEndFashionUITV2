@@ -106,19 +106,7 @@ describe('CategoryService', () => {
       );
     });
 
-
-    it('should throw an error if required fields are missing', async () => {
-      const categoryData: CreateCategoryDto = {
-        gender: '',
-        type: '',
-      }
-
-      await expect(service.create(categoryData)).rejects.toThrow(
-        new Error(ErrorCode.MISSING_INPUT),
-      );
-    });
-
-    it('should throw an error if gender and type are already registered', async () => {
+    it('should throw an error if gender and type are already exists', async () => {
       const categoryData: CreateCategoryDto = {
         gender: 'nam',
         type: 'áo',
@@ -161,7 +149,7 @@ describe('CategoryService', () => {
 
     it('should throw an error if gender and type already exist ', async () => {
       const categoryId = '1'
-      const categoryData : UpdateCategoryDto = {
+      const categoryData: UpdateCategoryDto = {
         gender: 'nam',
         type: '123'
       };
@@ -175,23 +163,27 @@ describe('CategoryService', () => {
       await expect(service.update(categoryId, categoryData)).rejects.toThrow(
         new Error(ErrorCode.CATEGORY_ALREADY_EXIST)
       );
-    
+
       expect(mockCategoryRepository.findOne).toHaveBeenCalledWith({
         where: { gender: categoryData.gender, type: categoryData.type },
       });
     })
 
-    it('should update the category if it exists', async () => {
-      const existingCategory = { id: '1', gender: 'female', type: 'dress' };
-      mockCategoryRepository.findOne.mockResolvedValue(existingCategory);
-      mockCategoryRepository.update.mockResolvedValue({ affected: 1 });
-
+    it('should update the category', async () => {
       const id = '1';
       const categoryData: UpdateCategoryDto = { gender: 'male', type: 'shirt' };
 
+      mockCategoryRepository.findOne.mockResolvedValue(null);
+      mockCategoryRepository.update.mockResolvedValue({ affected: 1 });
+
       const result = await service.update(id, categoryData);
 
-      expect(mockCategoryRepository.findOne).toHaveBeenCalledWith({ where: { id } });
+      expect(mockCategoryRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          gender: categoryData.gender,
+          type: categoryData.type,
+        }
+      });
       expect(mockCategoryRepository.update).toHaveBeenCalledWith(id, {
         gender: categoryData.gender,
         type: categoryData.type,

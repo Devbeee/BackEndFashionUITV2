@@ -14,10 +14,6 @@ export class CategoryService {
   ) { }
 
   async create(createCategoryDto: CreateCategoryDto) {
-    if (!createCategoryDto.gender || !createCategoryDto.type) {
-      throw new Error(ErrorCode.MISSING_INPUT);
-    }
-
     const existedCategory = await this.categoryRepository.findOne({
       where: { gender: createCategoryDto.gender, type: createCategoryDto.type }
     })
