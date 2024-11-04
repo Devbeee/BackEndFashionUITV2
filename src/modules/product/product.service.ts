@@ -1,6 +1,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 import { ProductDetailsService } from '@/modules/product-details/product-details.service';
+import { convertToSlug } from '@/utils';
 
 import { ErrorCode } from '@/common/enums';
 
@@ -29,8 +30,12 @@ export class ProductService {
     }
   
     const { sizes, colors, imgUrls, stocks, ...productInfo } = productData;
+
+    const slug = convertToSlug(productData.name);
+    
+    const productInfoWithSlug = { ...productInfo, slug };
   
-    const product = this.productRepository.create(productInfo);
+    const product = this.productRepository.create(productInfoWithSlug);
     const savedProduct = await this.productRepository.save(product);
   
     const productDetails = [];
@@ -86,7 +91,11 @@ export class ProductService {
     
     const { sizes, colors, imgUrls, stocks, ...productInfo } = productUpdateData;
 
-    Object.assign(product, productInfo);
+    const slug = productInfo.name ? convertToSlug(productUpdateData.name) : '';
+    
+    const productUpdateInfo = { ...productInfo, slug };
+
+    Object.assign(product, productUpdateInfo);
 
     return await this.productRepository.save(product);
   }

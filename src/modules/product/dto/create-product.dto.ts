@@ -18,11 +18,6 @@ export class CreateProductDto {
     @ApiProperty()
     price: number;
 
-    @IsString({ message: 'Slug must be a string' })
-    @IsNotEmpty({ message: 'Slug is required' })
-    @ApiProperty()
-    slug: string;
-
     @IsNumber({allowNaN: false}, {message: 'Discount must be a number'})
     @ApiProperty()
     discount?: number;
