@@ -1,6 +1,7 @@
 import { Role } from '@/common/enums';
 import { Contact } from '@/modules/contact/entities/contact.entity';
 import { ApiProperty } from '@nestjs/swagger';
+
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -9,7 +10,6 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToMany,
-  JoinColumn,
 } from 'typeorm';
 
 @Entity()

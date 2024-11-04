@@ -1,6 +1,13 @@
-import { User } from "@/modules/user/entities/user.entity";
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+
+import { User } from "@/modules/user/entities/user.entity";
+
+import { 
+    Column, 
+    Entity, 
+    ManyToOne, 
+    PrimaryGeneratedColumn 
+} from "typeorm";
 
 @Entity()
 export class Contact {
@@ -25,12 +32,7 @@ export class Contact {
     description: string;
 
     @ApiProperty()
-    @Column({name: 'userId'})
-    userId: string;
-
-    @ApiProperty()
-    @ManyToOne(() => User, (user) => user.id, { nullable: true })
-    @JoinColumn({ name: 'userId' })
+    @ManyToOne(() => User, (user) => user.contacts, { onDelete: 'CASCADE' })
     user: User;
 }
 
