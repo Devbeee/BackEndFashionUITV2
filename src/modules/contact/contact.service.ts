@@ -11,14 +11,22 @@ import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 
 import { Repository } from 'typeorm';
+import { UsersService } from '../user/user.service';
 
 @Injectable()
 export class ContactService {
   constructor(
     @InjectRepository(Contact)
-    private readonly contactRepository: Repository<Contact>){}
+    private readonly contactRepository: Repository<Contact>,
+    private readonly usersService: UsersService){}
 
   async create(contactData: CreateContactDto) {
+    const existUser = await this.usersService.findById(contactData.userId);
+
+    if (!existUser) {
+      throw new Error(ErrorCode.USER_NOT_FOUND);
+    }
+    
     const contact = this.contactRepository.create(contactData);
     return await this.contactRepository.save(contact);
   }

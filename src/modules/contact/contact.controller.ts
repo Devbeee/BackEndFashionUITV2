@@ -27,7 +27,12 @@ export class ContactController {
     try {
       return this.contactService.create(createContactDto);
     } catch (error) {
-      throw error;
+      if (error.message === ErrorCode.USER_NOT_FOUND) {
+        throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
+      }
+      else {
+        throw error;
+      }
     }
   }
 
