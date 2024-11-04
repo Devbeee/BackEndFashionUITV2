@@ -14,6 +14,8 @@ import { DatabaseModule } from '@/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/user/user.module';
 import { CategoryModule } from './modules/category/category.module';
+import { ContactModule } from './modules/contact/contact.module';
+
 
 @Module({
   imports: [
@@ -54,6 +56,7 @@ import { CategoryModule } from './modules/category/category.module';
     AuthModule,
     UsersModule,
     CategoryModule,
+    ContactModule,
   ],
 
   providers: [
