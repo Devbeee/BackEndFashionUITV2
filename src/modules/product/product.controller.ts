@@ -27,7 +27,7 @@ export class ProductController {
   @Post()
   create(@Body() createProductDto: CreateProductDto) {
     try {
-      
+      return this.productService.create(createProductDto);
     } catch (error) {
       if (error.message === ErrorCode.PRODUCT_ALREADY_EXIST) {
         throw new BadRequestException(ErrorCode.PRODUCT_ALREADY_EXIST);
@@ -36,7 +36,6 @@ export class ProductController {
         throw error;
       }
     }
-    return this.productService.create(createProductDto);
   }
 
   @Get()
