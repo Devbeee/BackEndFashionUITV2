@@ -1,10 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable } from '@nestjs/common';
+import { ProductDetailsService } from '@/modules/product-details/product-details.service';
+
+import { ErrorCode } from '@/common/enums';
+
+import { Product } from './entities/product.entity';
+
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+
 import { Repository } from 'typeorm';
-import { Product } from './entities/product.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ProductDetailsService } from '../product-details/product-details.service';
 
 @Injectable()
 export class ProductService {
@@ -13,33 +18,46 @@ export class ProductService {
     private readonly productRepository: Repository<Product>,
     private readonly productDetailsService: ProductDetailsService,
   ) {}
-  async create(createProductDto: CreateProductDto) {
-    const existingProduct = await this.findByName(createProductDto.name);
 
-    if (existingProduct.length > 0) {
-      throw new Error('Product with the same name already exists');
+  async create(productData: CreateProductDto) {
+    const existingProduct = await this.productRepository.findOne({
+      where: { name: productData.name }
+    });
+  
+    if (existingProduct) {
+      throw new Error(ErrorCode.PRODUCT_ALREADY_EXIST);
     }
-
-    const productInfo = {
-      name: createProductDto.name,
-      description: createProductDto.description,
-      price: createProductDto.price,
-      categoryId: createProductDto.categoryId,
-      slug: createProductDto.slug,
-      discount: createProductDto.discount
-    }
+  
+    const { sizes, colors, imgUrls, stocks, ...productInfo } = productData;
+  
     const product = this.productRepository.create(productInfo);
-    const response =  await this.productRepository.save(product);
-    const productDetails = {
-      size: createProductDto.size,
-      color: createProductDto.colors,
-      imgUrl: createProductDto.imgUrl,
-      stock: createProductDto.stock,
-      productId: response.id
-    }
-    await this.productDetailsService.create(productDetails);
-    return this.findOne(response.id);
+    const savedProduct = await this.productRepository.save(product);
+  
+    const productDetails = [];
     
+    for (let sizeIndex = 0; sizeIndex < sizes.length; sizeIndex++) {
+      for (let colorIndex = 0; colorIndex < colors.length; colorIndex++) {
+        const index = sizeIndex * colors.length + colorIndex;
+        
+        const productDetail = {
+          size: sizes?.at(sizeIndex),
+          color: colors?.at(colorIndex),
+          imgUrl: imgUrls?.at(index),
+          stock: stocks?.at(index),
+          product: savedProduct
+        };
+  
+        productDetails.push(productDetail);
+      }
+    }
+  
+    await Promise.all(
+      productDetails.map(productDetail => 
+        this.productDetailsService.create(productDetail)
+      )
+    );
+
+    return savedProduct;
   }
 
   async findAll() {
@@ -50,57 +68,36 @@ export class ProductService {
     );
   }
 
-  async findOne(id: string) {
+  async findOne(productId: string) {
     return await this.productRepository.findOne({
-      where: { id },
+      where: { id: productId },
       relations: {
         productDetails: true
       }
     });
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
-    const product = await this.findOne(id);
+  async update(productId: string, productUpdateData: UpdateProductDto) {
+    const product = await this.findOne(productId);
 
     if(!product) {
-      throw new NotFoundException(`Product #${id} not found`);
+      throw new Error(ErrorCode.PRODUCT_NOT_FOUND);
     }
     
-    const productInfo = {
-      name: updateProductDto.name,
-      description: updateProductDto.description,
-      price: updateProductDto.price,
-      categoryId: updateProductDto.categoryId,
-      slug: updateProductDto.slug,
-      discount: updateProductDto.discount
-    }
+    const { sizes, colors, imgUrls, stocks, ...productInfo } = productUpdateData;
 
     Object.assign(product, productInfo);
 
     return await this.productRepository.save(product);
   }
 
-  async remove(id: string) {
-    const product = await this.findOne(id);
+  async remove(productId: string) {
+    const product = await this.findOne(productId);
 
     if(!product) {
-      throw new NotFoundException(`Product #${id} not found`);
-    }
-
-    const productDetail = await this.productDetailsService.findByProductId(id);
-    for (let i = 0; i < productDetail.length; i++) {
-      await this.productDetailsService.remove(productDetail[i].id);
+      throw new Error(ErrorCode.PRODUCT_NOT_FOUND);
     }
 
     return await this.productRepository.remove(product);  
-  }
-
-  async findByName(name: string) {
-    return await this.productRepository.find({
-      where: { name },
-      relations: {
-        productDetails: true
-      }
-    });
   }
 }

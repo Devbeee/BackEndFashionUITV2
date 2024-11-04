@@ -1,7 +1,15 @@
-import { Size } from "@/common/enums";
-import { Product } from "@/modules/product/entities/product.entity";
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+
+import { Size } from "@/common/enums";
+
+import { Product } from "@/modules/product/entities/product.entity";
+
+import { 
+    Column, 
+    Entity, 
+    ManyToOne, 
+    PrimaryGeneratedColumn 
+} from "typeorm";
 
 @Entity()
 export class ProductDetail {
@@ -23,14 +31,9 @@ export class ProductDetail {
 
     @ApiProperty()
     @Column()
-    stock: boolean;
+    stock: number;
 
     @ApiProperty()
-    @Column({name: 'productId'})
-    productId: string;
-
-    @ApiProperty()
-    @ManyToOne(() => Product, (product) => product.id)
-    @JoinColumn({ name: 'productId' })
+    @ManyToOne(() => Product, (product) => product.productDetails, { onDelete: 'CASCADE' })
     product: Product;
 }

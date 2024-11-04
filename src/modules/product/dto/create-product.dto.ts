@@ -18,11 +18,6 @@ export class CreateProductDto {
     @ApiProperty()
     price: number;
 
-    @IsString({ message: 'Category ID must be a string' })
-    @IsNotEmpty({ message: 'Category ID is required' })
-    @ApiProperty()
-    categoryId: string;
-
     @IsString({ message: 'Slug must be a string' })
     @IsNotEmpty({ message: 'Slug is required' })
     @ApiProperty()
@@ -35,19 +30,25 @@ export class CreateProductDto {
     @IsString({ message: 'Color must be a string' })
     @IsNotEmpty({ message: 'Color is required' })
     @ApiProperty()
-    colors: string;
+    colors: string[];
 
     @IsEnum(Size, { message: 'Size must be a valid enum value' })
     @IsNotEmpty({ message: 'Size is required' })
     @ApiProperty()
-    size: Size;
+    sizes: Size[];
 
     @IsString({ message: 'Image URL must be a string' })
     @IsNotEmpty({ message: 'Image URL is required' })
     @ApiProperty()
-    imgUrl: string;
+    imgUrls: string[];
 
+    @IsNumber({allowNaN: false}, {message: 'Stock must be a number'})
     @IsNotEmpty({ message: 'Stock is required' })
     @ApiProperty()
-    stock: boolean;
+    stocks: number[];
+
+    @IsString({ message: 'Category ID must be a string' })
+    @IsNotEmpty({ message: 'Category ID is required' })
+    @ApiProperty()
+    categoryId: string;
 }
