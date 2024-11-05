@@ -1,11 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
 
+import { Category } from "@/modules/category/entities/category.entity";
 import { ProductDetail } from "@/modules/product-details/entities/product-detail.entity";
 
 import { 
     Column, 
     CreateDateColumn, 
     Entity, 
+    ManyToOne, 
     OneToMany, 
     PrimaryGeneratedColumn, 
     UpdateDateColumn 
@@ -30,10 +32,6 @@ export class Product {
     price: number;
 
     @ApiProperty()
-    @Column()
-    categoryId: string;
-
-    @ApiProperty()
     @Column({ unique: true })
     slug: string;
 
@@ -52,4 +50,8 @@ export class Product {
     @ApiProperty()
     @OneToMany(() => ProductDetail, (ProductDetail) => ProductDetail.product)
     productDetails: ProductDetail[];
+
+    @ApiProperty()
+    @ManyToOne(() => Category, (category) => category.products)
+    category: Category;
 }

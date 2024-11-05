@@ -1,6 +1,8 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 import { ProductDetailsService } from '@/modules/product-details/product-details.service';
+import { CategoryService } from '@/modules/category/category.service';
+
 import { convertToSlug } from '@/utils';
 
 import { ErrorCode } from '@/common/enums';
@@ -18,6 +20,7 @@ export class ProductService {
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
     private readonly productDetailsService: ProductDetailsService,
+    private readonly categoryService: CategoryService,
   ) {}
 
   async create(productData: CreateProductDto) {
@@ -29,35 +32,33 @@ export class ProductService {
       throw new Error(ErrorCode.PRODUCT_ALREADY_EXIST);
     }
   
-    const { sizes, colors, imgUrls, stocks, ...productInfo } = productData;
+    const { productDetails, categoryId, ...productInfo } = productData;
 
     const slug = convertToSlug(productData.name);
+    const category = await this.categoryService.findOne(categoryId);
     
-    const productInfoWithSlug = { ...productInfo, slug };
+    if (!category) {
+      throw new Error(ErrorCode.CATEGORY_NOT_FOUND);
+    }
+
+    const productWithFullInfo = { ...productInfo, category, slug };
   
-    const product = this.productRepository.create(productInfoWithSlug);
+    const product = this.productRepository.create(productWithFullInfo);
     const savedProduct = await this.productRepository.save(product);
   
-    const productDetails = [];
-    
-    for (let sizeIndex = 0; sizeIndex < sizes.length; sizeIndex++) {
-      for (let colorIndex = 0; colorIndex < colors.length; colorIndex++) {
-        const index = sizeIndex * colors.length + colorIndex;
-        
-        const productDetail = {
-          size: sizes?.at(sizeIndex),
-          color: colors?.at(colorIndex),
-          imgUrl: imgUrls?.at(index),
-          stock: stocks?.at(index),
-          product: savedProduct
-        };
-  
-        productDetails.push(productDetail);
-      }
+    const productDetailsData = [];
+
+    for (const productDetail of productDetails) {
+      const productDetailData = {
+        ...productDetail,
+        product: savedProduct
+      };
+
+      productDetailsData.push(productDetailData);
     }
   
     await Promise.all(
-      productDetails.map(productDetail => 
+      productDetailsData.map(productDetail => 
         this.productDetailsService.create(productDetail)
       )
     );
@@ -68,7 +69,8 @@ export class ProductService {
   async findAll() {
     return await this.productRepository.find(
       {relations: {
-        productDetails: true
+        productDetails: true,
+        category: true
       }}
     );
   }
@@ -77,7 +79,8 @@ export class ProductService {
     return await this.productRepository.findOne({
       where: { id: productId },
       relations: {
-        productDetails: true
+        productDetails: true,
+        category: true
       }
     });
   }
@@ -89,15 +92,29 @@ export class ProductService {
       throw new Error(ErrorCode.PRODUCT_NOT_FOUND);
     }
     
-    const { sizes, colors, imgUrls, stocks, ...productInfo } = productUpdateData;
+    const {productDetails, categoryId, ...productInfo } = productUpdateData;
 
     const slug = productInfo.name ? convertToSlug(productUpdateData.name) : '';
+
+    if (!categoryId){
+      const productUpdateInfo = { ...productInfo, slug };
+  
+      Object.assign(product, productUpdateInfo);
+  
+      return await this.productRepository.save(product);
+    }
+    else {
+      const category = await this.categoryService.findOne(categoryId);
     
-    const productUpdateInfo = { ...productInfo, slug };
-
-    Object.assign(product, productUpdateInfo);
-
-    return await this.productRepository.save(product);
+      if (!category) {
+        throw new Error(ErrorCode.CATEGORY_NOT_FOUND);
+      }
+      const productUpdateInfo = { ...productInfo, category, slug };
+  
+      Object.assign(product, productUpdateInfo);
+  
+      return await this.productRepository.save(product);
+    }
   }
 
   async remove(productId: string) {

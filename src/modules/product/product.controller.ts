@@ -32,6 +32,9 @@ export class ProductController {
       if (error.message === ErrorCode.PRODUCT_ALREADY_EXIST) {
         throw new BadRequestException(ErrorCode.PRODUCT_ALREADY_EXIST);
       }
+      else if (error.message === ErrorCode.CATEGORY_NOT_FOUND) {
+        throw new NotFoundException(ErrorCode.CATEGORY_NOT_FOUND);
+      }
       else {
         throw error;
       }
@@ -63,6 +66,9 @@ export class ProductController {
     } catch (error) {
       if (error.message === ErrorCode.PRODUCT_NOT_FOUND) {
         throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND);
+      }
+      if (error.message === ErrorCode.CATEGORY_NOT_FOUND) {
+        throw new NotFoundException(ErrorCode.CATEGORY_NOT_FOUND);
       }
       else {
         throw error;

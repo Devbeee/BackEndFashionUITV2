@@ -1,4 +1,4 @@
-import { Size } from '@/common/enums';
+import { CreateProductDetailDto } from '@/modules/product-details/dto/create-product-detail.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsNumber, IsEnum } from 'class-validator';
 
@@ -22,25 +22,8 @@ export class CreateProductDto {
     @ApiProperty()
     discount?: number;
 
-    @IsString({ message: 'Color must be a string' })
-    @IsNotEmpty({ message: 'Color is required' })
     @ApiProperty()
-    colors: string[];
-
-    @IsEnum(Size, { message: 'Size must be a valid enum value' })
-    @IsNotEmpty({ message: 'Size is required' })
-    @ApiProperty()
-    sizes: Size[];
-
-    @IsString({ message: 'Image URL must be a string' })
-    @IsNotEmpty({ message: 'Image URL is required' })
-    @ApiProperty()
-    imgUrls: string[];
-
-    @IsNumber({allowNaN: false}, {message: 'Stock must be a number'})
-    @IsNotEmpty({ message: 'Stock is required' })
-    @ApiProperty()
-    stocks: number[];
+    productDetails: CreateProductDetailDto[];
 
     @IsString({ message: 'Category ID must be a string' })
     @IsNotEmpty({ message: 'Category ID is required' })

@@ -33,5 +33,5 @@ export class CreateProductDetailDto {
     stock: number;
 
     @ApiProperty()
-    product: Product;
+    product?: Product;
 }
