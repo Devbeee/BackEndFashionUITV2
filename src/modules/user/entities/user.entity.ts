@@ -1,5 +1,7 @@
 import { Role } from '@/common/enums';
+import { Contact } from '@/modules/contact/entities/contact.entity';
 import { ApiProperty } from '@nestjs/swagger';
+
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,6 +9,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity()
@@ -56,4 +59,8 @@ export class User {
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   @ApiProperty()
   deletedAt?: Date;
+
+  @ApiProperty()
+  @OneToMany(() => Contact, (contact) => contact.user)
+  contacts: Contact[];
 }

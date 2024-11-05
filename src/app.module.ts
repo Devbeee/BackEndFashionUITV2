@@ -15,6 +15,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/user/user.module';
 import { ProductModule } from './modules/product/product.module';
 import { ProductDetailsModule } from './modules/product-details/product-details.module';
+import { CategoryModule } from './modules/category/category.module';
+import { ContactModule } from './modules/contact/contact.module';
+
 
 @Module({
   imports: [
@@ -56,6 +59,8 @@ import { ProductDetailsModule } from './modules/product-details/product-details.
     UsersModule,
     ProductModule,
     ProductDetailsModule,
+    CategoryModule,
+    ContactModule,
   ],
 
   providers: [
