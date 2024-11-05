@@ -17,7 +17,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         migrations: [__dirname + '/migrations/*.{ts,js}'],
         migrationsTableName: 'migrations',
         synchronize: configService.get('NODE_ENV') === 'development',
-        ssl: { rejectUnauthorized: false },
       }),
       inject: [ConfigService],
     }),
