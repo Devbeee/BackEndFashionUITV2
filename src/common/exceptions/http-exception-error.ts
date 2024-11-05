@@ -47,4 +47,14 @@ export const exceptionCase = {
     message: 'Invitation is not found',
     errorCode: ErrorCode.INVITATION_NOT_FOUND,
   },
+  [ErrorCode.CATEGORY_ALREADY_EXIST]: {
+    status: HttpStatus.CONFLICT,
+    message: 'Category already exists',
+    errorCode: ErrorCode.CATEGORY_ALREADY_EXIST,
+  },
+  [ErrorCode.CATEGORY_NOT_FOUND]: {
+    status: HttpStatus.BAD_REQUEST,
+    message: 'Category is not found',
+    errorCode: ErrorCode.CATEGORY_NOT_FOUND,
+  },
 };
