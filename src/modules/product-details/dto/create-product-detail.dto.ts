@@ -34,4 +34,9 @@ export class CreateProductDetailDto {
 
     @ApiProperty()
     product?: Product;
+
+    @ApiProperty()
+    @IsString({ message: 'Product Detail ID must be a string' })
+    @IsNotEmpty({ message: 'Product Detail ID is required' })
+    productDetailId?: string;
 }

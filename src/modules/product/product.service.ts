@@ -97,6 +97,10 @@ export class ProductService {
     const slug = productInfo.name ? convertToSlug(productUpdateData.name) : '';
 
     if (!categoryId){
+      productDetails.forEach(async productDetails => {
+        const {product, productDetailId,... productDetailsUpdate} = productDetails;
+        return await this.productDetailsService.update(productDetailId, productDetailsUpdate);
+      })
       const productUpdateInfo = { ...productInfo, slug };
   
       Object.assign(product, productUpdateInfo);
@@ -109,6 +113,10 @@ export class ProductService {
       if (!category) {
         throw new Error(ErrorCode.CATEGORY_NOT_FOUND);
       }
+      productDetails.forEach(async productDetails => {
+        const {product, productDetailId,... productDetailsUpdate} = productDetails;
+        return await this.productDetailsService.update(productDetailId, productDetailsUpdate);
+      })
       const productUpdateInfo = { ...productInfo, category, slug };
   
       Object.assign(product, productUpdateInfo);
