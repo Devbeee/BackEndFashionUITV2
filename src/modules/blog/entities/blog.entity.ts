@@ -4,9 +4,13 @@ import {
   PrimaryGeneratedColumn, 
   UpdateDateColumn,
   DeleteDateColumn,
-  CreateDateColumn
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+
+import { User } from '@/modules/user/entities/user.entity';
 
 @Entity()
 export class Blog {
@@ -42,7 +46,12 @@ export class Blog {
   @ApiProperty()
   updatedAt: Date;
 
-  @DeleteDateColumn({type: 'timestamptz'})
+  @DeleteDateColumn({type: 'timestamptz', default: null})
   @ApiProperty()
   deletedAt: Date;
+
+  @ApiProperty({ type: () => User })
+  @ManyToOne(() => User, (user) => user.blogs)
+  @JoinColumn({name: 'userId'})
+  author: User;
 }

@@ -17,7 +17,7 @@ export class ResponseBlogDto {
   slug: string;
   
   @ApiProperty()
-  user: string;
+  author: string;
 
   @ApiProperty()
   createdAt: Date;

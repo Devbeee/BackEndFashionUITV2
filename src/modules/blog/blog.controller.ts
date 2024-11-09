@@ -5,6 +5,7 @@ import {
     Get, 
     HttpCode, 
     NotFoundException, 
+    BadRequestException,
     Param, 
     Patch, 
     Post, 
@@ -12,8 +13,6 @@ import {
     Req, 
     UseGuards 
 } from '@nestjs/common';
-
-import { ErrorCode, Role } from '@/common/enums';
 
 import { 
     ApiBadRequestResponse, 
@@ -25,16 +24,16 @@ import {
     ApiTags 
 } from '@nestjs/swagger';
 
+
+import { ErrorCode, Role } from '@/common/enums';
 import { handleDataResponse } from '@/utils';
+import { Roles } from '@/modules/auth/roles.decorator';
+import { AuthGuard } from '@/modules/auth/auth.guard';
+import { RolesGuard } from '@/modules/auth/roles.guard';
 
 import { BlogService } from './blog.service';
-
 import { CreateBlogDto } from './dtos/create-blog.dto';
 import { UpdateBlogDto } from './dtos/update-blog.dto';
-
-import { Roles } from '../auth/roles.decorator';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
 
 @ApiTags('Blogs')
 @Controller('blogs')
@@ -52,6 +51,12 @@ export class BlogController {
     @ApiQuery({ name: 'page', required: false, type: Number})
     @ApiQuery({ name: 'limit', required: false, type: Number})
     async getAll(@Query('page') page: number, @Query('limit') limit: number) {
+        if (isNaN(page) || page <= 0) {
+            throw new BadRequestException(ErrorCode.PAGE_INVALID);
+        }
+        if (isNaN(limit) || limit <= 0) {
+            throw new BadRequestException(ErrorCode.LIMIT_INVALID);
+        }
         try {
             return await this.blogService.getAll(page, limit);
         }
@@ -94,8 +99,8 @@ export class BlogController {
     @ApiBadRequestResponse({ description: 'Missing input!' })
     async createBlog(@Body() createBlogDto : CreateBlogDto, @Req() request : Request) {
         try {
-            const userId = request['user'].id;
-            await this.blogService.createBlog(createBlogDto, userId);
+            const {id} = request['user'];
+            await this.blogService.createBlog(createBlogDto, id);
             handleDataResponse('Blog created successfully!');
         }
         catch (error) {

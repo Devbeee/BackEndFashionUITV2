@@ -1,14 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Repository, In } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In } from 'typeorm';
 
 import { ErrorCode } from '@/common/enums';
+import { convertToSlug } from '@/utils';
 
 import { Blog } from './entities/blog.entity';
-import { User } from '../user/entities/user.entity';
-
-import { generateSlug } from '@/utils';
-
 import { CreateBlogDto } from './dtos/create-blog.dto';
 import { UpdateBlogDto } from './dtos/update-blog.dto';
 import { ResponseBlogDto } from './dtos/response-blog.dto';
@@ -17,14 +14,12 @@ import { ResponseBlogDto } from './dtos/response-blog.dto';
 export class BlogService {
     constructor(
         @InjectRepository(Blog)
-        private blogRepository : Repository<Blog>,
-        @InjectRepository(User)
-        private userRepository : Repository<User>,
+        private blogRepository : Repository<Blog>
     ) {}
 
     async getAll (page : number = 1, limit : number = 8) {
         const [blogs, total] =  await this.blogRepository.findAndCount({
-            withDeleted: false,
+            relations: ['author'],
             order: {
                 createdAt: 'DESC',
             },
@@ -34,21 +29,15 @@ export class BlogService {
         if (!blogs || blogs.length === 0) {
             throw new Error(ErrorCode.BLOG_NOT_FOUND);
         }
-        const  blogsRes : ResponseBlogDto[] = [];
-        for (let i = 0; i < blogs.length; i++) {
-            const user = await this.userRepository.findOne({
-                where: {id: blogs[i].userId},
-            });
-            blogsRes[i] = {
-                id: blogs[i].id,
-                title: blogs[i].title,
-                description: blogs[i].description,
-                coverImage: blogs[i].coverImage,
-                slug: blogs[i].slug,
-                user: user.fullName,
-                createdAt: blogs[i].createdAt
-            }
-        }
+        const  blogsRes : ResponseBlogDto[] = blogs.map(blog => ({
+            id: blog.id,
+            title: blog.title,
+            description: blog.description,
+            coverImage: blog.coverImage,
+            slug: blog.slug,
+            author: blog.author.fullName,
+            createdAt: blog.createdAt,
+        }));
         return { 
             data: blogsRes,
             total,
@@ -59,29 +48,26 @@ export class BlogService {
 
     async getOne (slug : string) {
         const blog = await this.blogRepository.findOne({
+            relations: ['author'],
             where: {slug: slug},
-            withDeleted: false,
         });
         if (!blog) {
             throw new Error(ErrorCode.BLOG_NOT_FOUND);
         }
-        const user = await this.userRepository.findOne({
-            where: {id: blog.userId},
-        })
         const blogRes : ResponseBlogDto = {
             id: blog.id,
             title: blog.title,
             description: blog.description,
             coverImage: blog.coverImage,
             slug: blog.slug,
-            user: user.fullName,
+            author: blog.author.fullName,
             createdAt: blog.createdAt
         };
         return blogRes;
     }
 
     async createBlog (blog : CreateBlogDto, userId : string) : Promise<Blog> {
-        const slug = generateSlug(blog.title, {timestamp: true});
+        const slug = convertToSlug(blog.title);
         const newBlog = this.blogRepository.create({...blog, slug, userId});
         return await this.blogRepository.save(newBlog);
     }
@@ -89,7 +75,6 @@ export class BlogService {
     async updateBlog (slug : string, blog : UpdateBlogDto) {
         const existedBlog = await this.blogRepository.findOne({
             where: {slug: slug},
-            withDeleted: false,
         })
         if (!existedBlog) {
             throw new Error(ErrorCode.BLOG_NOT_FOUND);
@@ -97,14 +82,13 @@ export class BlogService {
         existedBlog.title = blog.title;
         existedBlog.description = blog.description;
         existedBlog.coverImage = blog.coverImage;
-        existedBlog.slug = generateSlug(blog.title, {timestamp: true});
+        existedBlog.slug = convertToSlug(blog.title);
         return await this.blogRepository.save(existedBlog);
     }
 
     async deleteBlog (slug : string) {
         const existedBlog = await this.blogRepository.findOne({
             where: {slug: slug},
-            withDeleted: false,
         });
         if (!existedBlog) {
             throw new Error(ErrorCode.BLOG_NOT_FOUND);
@@ -116,7 +100,6 @@ export class BlogService {
     async multiDeleteBlog (slugs : string[]) {
         const existedBlogs = await this.blogRepository.find({
             where: {slug: In(slugs)},
-            withDeleted: false,
         });
         if (!existedBlogs || existedBlogs.length === 0) {
             throw new Error(ErrorCode.BLOG_NOT_FOUND);
