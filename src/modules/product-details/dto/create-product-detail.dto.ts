@@ -17,6 +17,11 @@ export class CreateProductDetailDto {
     @ApiProperty()
     size: Size;
 
+    @IsString({ message: 'Color name must be a string' })
+    @IsNotEmpty({ message: 'Color name is required' })
+    @ApiProperty()
+    colorName: string;
+
     @IsString({ message: 'Color must be a string' })
     @IsNotEmpty({ message: 'Color is required' })
     @ApiProperty()

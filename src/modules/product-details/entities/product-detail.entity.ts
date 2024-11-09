@@ -23,6 +23,10 @@ export class ProductDetail {
 
     @ApiProperty()
     @Column()
+    colorName: string;
+
+    @ApiProperty()
+    @Column()
     color: string;
 
     @ApiProperty()
