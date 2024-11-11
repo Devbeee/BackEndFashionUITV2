@@ -1,5 +1,6 @@
 import { Role } from '@/common/enums';
 import { Contact } from '@/modules/contact/entities/contact.entity';
+import { Blog } from '@/modules/blog/entities/blog.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 import {
@@ -63,4 +64,8 @@ export class User {
   @ApiProperty()
   @OneToMany(() => Contact, (contact) => contact.user)
   contacts: Contact[];
+
+  @ApiProperty()
+  @OneToMany(() => Blog, (blog) => blog.author)
+  blogs: Blog[];
 }

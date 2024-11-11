@@ -15,7 +15,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/user/user.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ContactModule } from './modules/contact/contact.module';
-
+import { BlogModule } from './modules/blog/blog.module';
 
 @Module({
   imports: [
@@ -57,6 +57,7 @@ import { ContactModule } from './modules/contact/contact.module';
     UsersModule,
     CategoryModule,
     ContactModule,
+    BlogModule,
   ],
 
   providers: [
