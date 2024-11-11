@@ -32,20 +32,14 @@ export class CategoryService {
 
   async findAll() {
     return await this.categoryRepository.find({
-      select: ["id", "gender", "type"],
-      relations: {
-        products: true
-      }
+      select: ["id", "gender", "type"]
     });
   }
 
   async findOne(id: string) {
     const existedCategory = await this.categoryRepository.findOne({
       where: { id: id },
-      select: ["id", "gender", "type"],
-      relations: {
-        products: true
-      }
+      select: ["id", "gender", "type"]
     });
     if (!existedCategory) {
       throw new Error(ErrorCode.CATEGORY_NOT_FOUND)
