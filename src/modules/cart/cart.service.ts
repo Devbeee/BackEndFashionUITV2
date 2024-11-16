@@ -57,7 +57,7 @@ export class CartService {
   }
 
   async findByUserId(userId: string) {
-    const cartItem = await this.cartRepository.findOne({
+    return await this.cartRepository.findOne({
       where: { user: { id: userId } },
       relations: {
         cartProducts: {
@@ -84,9 +84,7 @@ export class CartService {
           }
         }
       },
-
     });
-    return cartItem;
   }
 
   async update(cartProductId: string, updateCartDto: UpdateCartDto, userId: string) {
