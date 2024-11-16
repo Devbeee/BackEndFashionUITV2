@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorCode } from '@/common/enums';
+import { ErrorCode, UpdateQuantityAction } from '@/common/enums';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { In, Repository } from 'typeorm';
@@ -32,27 +32,29 @@ export class CartProductService {
     return await this.cartProductRepository.save(newCartProduct);
   }
 
-  async incrementQuantity(id: string, updateCartProductDto: UpdateCartProductDto) {
-    return await this.cartProductRepository
+  async updateQuantity(
+    id: string,
+    updateCartProductDto: UpdateCartProductDto,
+    action: UpdateQuantityAction
+  ) {
+    const queryBuilder = this.cartProductRepository
       .createQueryBuilder()
       .update(CartProduct)
-      .set({
+      .where("id = :id", { id });
+
+    if (action === UpdateQuantityAction.INCREMENT) {
+      queryBuilder.set({
         quantity: () => `quantity + ${updateCartProductDto.quantity}`,
-      })
-      .where("id = :id", { id })
-      .execute();
+      });
+    } else if (action === UpdateQuantityAction.SET) {
+      queryBuilder.set({
+        quantity: updateCartProductDto.quantity,
+      });
+    }
+
+    return await queryBuilder.execute();
   }
 
-  async setQuantity(id: string, updateCartProductDto: UpdateCartProductDto) {
-    await this.cartProductRepository
-      .createQueryBuilder()
-      .update(CartProduct)
-      .set({
-        quantity: updateCartProductDto.quantity,
-      })
-      .where("id = :id", { id })
-      .execute();
-  }
 
   async remove(id: string) {
     const existedCartProduct = await this.cartProductRepository.findOne({
@@ -61,16 +63,12 @@ export class CartProductService {
     if (!existedCartProduct) {
       throw new Error(ErrorCode.CART_PRODUCT_NOT_FOUND)
     } else {
-      await this.cartProductRepository.softRemove(existedCartProduct)
-      return existedCartProduct.deletedAt
+      return await this.cartProductRepository.softRemove(existedCartProduct)
     }
   }
 
   async removeMultiple(ids: string[]) {
     const cartProducts = await this.cartProductRepository.findBy({ id: In(ids) });
-    await this.cartProductRepository.softRemove(cartProducts);
-
-    const deletedAtTimestamps = cartProducts.map(cartProduct => cartProduct.deletedAt);
-    return deletedAtTimestamps;
+    return await this.cartProductRepository.softRemove(cartProducts);
   }
 }

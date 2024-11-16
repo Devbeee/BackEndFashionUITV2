@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { ErrorCode } from '@/common/enums';
+import { ErrorCode, UpdateQuantityAction } from '@/common/enums';
 import { UsersService } from '@/modules/user/user.service';
 import { UpdateCartProductDto } from '@/modules/cart-product/dto/update-cart-product.dto';
 import { CartProductService } from '@/modules/cart-product/cart-product.service';
@@ -38,9 +38,10 @@ export class CartService {
     );
 
     if (existingCartProduct) {
-      return this.cartProductService.incrementQuantity(
+      return this.cartProductService.updateQuantity(
         existingCartProduct.id,
-        createCartDto.cartProduct as UpdateCartProductDto
+        createCartDto.cartProduct as UpdateCartProductDto,
+        UpdateQuantityAction.INCREMENT
       );
     }
 
@@ -83,7 +84,7 @@ export class CartService {
           }
         }
       },
-      
+
     });
     return cartItem;
   }
@@ -98,7 +99,7 @@ export class CartService {
       throw new Error(ErrorCode.CART_PRODUCT_NOT_FOUND)
     }
 
-    return await this.cartProductService.setQuantity(cartProductId, updateCartDto.cartProduct);
+    return await this.cartProductService.updateQuantity(cartProductId, updateCartDto.cartProduct, UpdateQuantityAction.INCREMENT);
   }
 
   async remove(cartProductId: string, userId: string) {
@@ -114,11 +115,9 @@ export class CartService {
   }
   async removeMultiple(cartProductIds: string[], userId: string) {
     const existingCart = await this.findByUserId(userId);
-    const foundIds = existingCart.cartProducts?.map(
-      (cp) => cp.id 
-    );
 
-    const missingIds = cartProductIds.filter(id => !foundIds.includes(id));
+    const missingIds = cartProductIds.filter((id) => 
+      !existingCart.cartProducts.map(cp => cp.id).includes(id));
 
     if (missingIds.length) {
       throw new Error(ErrorCode.CART_PRODUCT_NOT_FOUND)
