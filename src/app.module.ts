@@ -13,6 +13,8 @@ import { DatabaseModule } from '@/database/database.module';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/user/user.module';
+import { ProductModule } from './modules/product/product.module';
+import { ProductDetailsModule } from './modules/product-details/product-details.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ContactModule } from './modules/contact/contact.module';
 import { BlogModule } from './modules/blog/blog.module';
@@ -55,6 +57,8 @@ import { BlogModule } from './modules/blog/blog.module';
     DatabaseModule,
     AuthModule,
     UsersModule,
+    ProductModule,
+    ProductDetailsModule,
     CategoryModule,
     ContactModule,
     BlogModule,
