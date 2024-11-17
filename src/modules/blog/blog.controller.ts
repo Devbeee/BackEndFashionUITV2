@@ -34,6 +34,7 @@ import { RolesGuard } from '@/modules/auth/roles.guard';
 import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dtos/create-blog.dto';
 import { UpdateBlogDto } from './dtos/update-blog.dto';
+import { GetAllParamsDto } from './dtos/get-all-params.dto';
 
 @ApiTags('Blogs')
 @Controller('blogs')
@@ -50,15 +51,37 @@ export class BlogController {
     })
     @ApiQuery({ name: 'page', required: false, type: Number})
     @ApiQuery({ name: 'limit', required: false, type: Number})
-    async getAll(@Query('page') page: number, @Query('limit') limit: number) {
+    @ApiQuery({ name: 'keyword', required: false, type: String })
+    @ApiQuery({ name: 'sortstyle', required: false, type: String })
+    @ApiQuery({ name: 'author', required: false, type: [String] })
+    @ApiQuery({ name: 'createDateRange', required: false, type: [Date] })
+    async getAll(
+        @Query('page') page: number, 
+        @Query('limit') limit: number,
+        @Query('keyword') keyword: string,
+        @Query('sortstyle') sortStyle: string,
+        @Query('author') authors: string[],
+        @Query('createDateRange') createDateRange?: Date[]
+    ) {
         if (isNaN(page) || page <= 0) {
             throw new BadRequestException(ErrorCode.PAGE_INVALID);
         }
         if (isNaN(limit) || limit <= 0) {
             throw new BadRequestException(ErrorCode.LIMIT_INVALID);
         }
+        if (authors && !Array.isArray(authors)) {
+            authors = [authors];
+        }
+        const params : GetAllParamsDto = {
+            page, 
+            limit, 
+            keyword, 
+            authors, 
+            sortStyle, 
+            createDateRange
+        };
         try {
-            return await this.blogService.getAll(page, limit);
+            return await this.blogService.getAll(params);
         }
         catch (error) {
             if (error.message === ErrorCode.BLOG_NOT_FOUND) {
@@ -68,6 +91,28 @@ export class BlogController {
             }
         }
     }
+
+    @Get('authors')
+    @HttpCode(200)
+    @ApiOkResponse({
+        description: 'The authors have been successfully fetched.',
+    })
+    @ApiNotFoundResponse({
+        description: 'Authors not found.',
+    })
+    async getAllAuthors() {
+        try {
+            return await this.blogService.getAllAuthors();
+        }
+        catch (error) {
+            if (error.message === ErrorCode.BLOG_NOT_FOUND) {
+                throw new NotFoundException(ErrorCode.BLOG_NOT_FOUND);
+            } else {
+                throw error;
+            }
+        }
+    }
+
     @Get('/:slug')
     @HttpCode(200)
     @ApiOkResponse({

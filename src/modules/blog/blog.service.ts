@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 
-import { ErrorCode } from '@/common/enums';
+import { ErrorCode, SortStyles } from '@/common/enums';
 import { convertToSlug } from '@/utils';
 
 import { Blog } from './entities/blog.entity';
 import { CreateBlogDto } from './dtos/create-blog.dto';
 import { UpdateBlogDto } from './dtos/update-blog.dto';
 import { ResponseBlogDto } from './dtos/response-blog.dto';
+import { GetAllParamsDto } from './dtos/get-all-params.dto';
 
 @Injectable()
 export class BlogService {
@@ -17,17 +18,55 @@ export class BlogService {
         private blogRepository : Repository<Blog>
     ) {}
 
-    async getAll (page : number = 1, limit : number = 8) {
-        const [blogs, total] =  await this.blogRepository.findAndCount({
-            relations: ['author'],
-            order: {
-                createdAt: 'DESC',
-            },
-            skip: (page - 1) * limit,
-            take: limit,
-        });
+    async getAll (params : GetAllParamsDto) {
+        const { page, limit, keyword, authors, sortStyle, createDateRange } = params;
+        const queryBuilder = this.blogRepository.createQueryBuilder('blog')
+            .leftJoinAndSelect('blog.author', 'author')
+            .skip((page -1) * limit)
+            .take(limit);
+
+        if (authors && authors.length > 0) {
+            queryBuilder.andWhere('blog.author.id IN (:...authors)', {authors});
+        }
+
+        if (createDateRange && createDateRange.length === 2) {
+            queryBuilder.andWhere('blog.createdAt BETWEEN :startDate AND :endDate', {
+                startDate: createDateRange[0],
+                endDate: createDateRange[1],
+            });
+        }
+
+        if (keyword) {
+            queryBuilder.andWhere('blog.title LIKE :keyword OR blog.description LIKE :keyword', {keyword: `%${keyword}%`});
+        }
+
+        switch (sortStyle) {
+            case SortStyles.name_asc:
+                queryBuilder.orderBy('blog.title', 'ASC');
+                break;
+            case SortStyles.name_desc:
+                queryBuilder.orderBy('blog.title', 'DESC');
+                break;
+            case SortStyles.date_asc:
+                queryBuilder.orderBy('blog.createdAt', 'ASC');
+                break;
+            case SortStyles.date_desc:
+                queryBuilder.orderBy('blog.createdAt', 'DESC');
+                break;
+            default:
+                queryBuilder.orderBy('blog.createdAt', 'DESC');
+                break;
+        }
+
+        const [blogs, total] = await queryBuilder.getManyAndCount();
+
         if (!blogs || blogs.length === 0) {
-            throw new Error(ErrorCode.BLOG_NOT_FOUND);
+            return { 
+                data: [],
+                total,
+                page,
+                limit,
+            };
         }
         const  blogsRes : ResponseBlogDto[] = blogs.map(blog => ({
             id: blog.id,
@@ -35,7 +74,10 @@ export class BlogService {
             description: blog.description,
             coverImage: blog.coverImage,
             slug: blog.slug,
-            author: blog.author.fullName,
+            author: {
+                id: blog.author.id,
+                fullName: blog.author.fullName,
+            },
             createdAt: blog.createdAt,
         }));
         return { 
@@ -60,7 +102,10 @@ export class BlogService {
             description: blog.description,
             coverImage: blog.coverImage,
             slug: blog.slug,
-            author: blog.author.fullName,
+            author: {
+                id: blog.author.id,
+                fullName: blog.author.fullName,
+            },
             createdAt: blog.createdAt
         };
         return blogRes;
@@ -105,5 +150,15 @@ export class BlogService {
             throw new Error(ErrorCode.BLOG_NOT_FOUND);
         }
         return await this.blogRepository.softRemove(existedBlogs);
+    }
+
+    async getAllAuthors () {
+        const authors = await this.blogRepository.createQueryBuilder('blog')
+            .select('author.id', 'id')
+            .addSelect('author.fullName', 'fullName')
+            .leftJoin('blog.author', 'author')
+            .groupBy('author.id')
+            .getRawMany();
+        return authors;
     }
 }
