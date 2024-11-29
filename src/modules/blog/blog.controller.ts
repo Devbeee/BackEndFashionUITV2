@@ -5,7 +5,6 @@ import {
     Get, 
     HttpCode, 
     NotFoundException, 
-    BadRequestException,
     Param, 
     Patch, 
     Post, 
@@ -52,34 +51,15 @@ export class BlogController {
     @ApiQuery({ name: 'page', required: false, type: Number})
     @ApiQuery({ name: 'limit', required: false, type: Number})
     @ApiQuery({ name: 'keyword', required: false, type: String })
-    @ApiQuery({ name: 'sortstyle', required: false, type: String })
-    @ApiQuery({ name: 'author', required: false, type: [String] })
+    @ApiQuery({ name: 'sortStyle', required: false, type: String })
+    @ApiQuery({ name: 'authors', required: false, type: [String] })
     @ApiQuery({ name: 'createDateRange', required: false, type: [Date] })
     async getAll(
-        @Query('page') page: number, 
-        @Query('limit') limit: number,
-        @Query('keyword') keyword: string,
-        @Query('sortstyle') sortStyle: string,
-        @Query('author') authors: string[],
-        @Query('createDateRange') createDateRange?: Date[]
+        @Query() params : GetAllParamsDto
     ) {
-        if (isNaN(page) || page <= 0) {
-            throw new BadRequestException(ErrorCode.PAGE_INVALID);
+        if(params.authors && !Array.isArray(params.authors)) {
+            params.authors = [params.authors];
         }
-        if (isNaN(limit) || limit <= 0) {
-            throw new BadRequestException(ErrorCode.LIMIT_INVALID);
-        }
-        if (authors && !Array.isArray(authors)) {
-            authors = [authors];
-        }
-        const params : GetAllParamsDto = {
-            page, 
-            limit, 
-            keyword, 
-            authors, 
-            sortStyle, 
-            createDateRange
-        };
         try {
             return await this.blogService.getAll(params);
         }

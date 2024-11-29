@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, FindManyOptions, Between, Like } from 'typeorm';
 
 import { ErrorCode, SortStyles } from '@/common/enums';
 import { convertToSlug } from '@/utils';
@@ -8,80 +8,61 @@ import { convertToSlug } from '@/utils';
 import { Blog } from './entities/blog.entity';
 import { CreateBlogDto } from './dtos/create-blog.dto';
 import { UpdateBlogDto } from './dtos/update-blog.dto';
-import { ResponseBlogDto } from './dtos/response-blog.dto';
 import { GetAllParamsDto } from './dtos/get-all-params.dto';
+import { AuthorDto } from './dtos/author.dto';
 
-@Injectable()
+@Injectable() 
 export class BlogService {
     constructor(
         @InjectRepository(Blog)
         private blogRepository : Repository<Blog>
     ) {}
 
-    async getAll (params : GetAllParamsDto) {
-        const { page, limit, keyword, authors, sortStyle, createDateRange } = params;
-        const queryBuilder = this.blogRepository.createQueryBuilder('blog')
-            .leftJoinAndSelect('blog.author', 'author')
-            .skip((page -1) * limit)
-            .take(limit);
+    private addWhereConditions(filters: {
+        authors?: string[];
+        createDateRange?: Date[];
+        keyword?: string;
+    }) {
+        const { authors, createDateRange, keyword } = filters;
 
-        if (authors && authors.length > 0) {
-            queryBuilder.andWhere('blog.author.id IN (:...authors)', {authors});
-        }
+        const baseConditions = (field: 'title' | 'description') => ({
+            ...(authors?.length && { author: { id: In(authors) } }),
+            ...(createDateRange?.length === 2 && {
+                createdAt: Between(createDateRange[0], createDateRange[1]),
+            }),
+            ...(keyword && { [field]: Like(`%${keyword}%`) }),
+        });
 
-        if (createDateRange && createDateRange.length === 2) {
-            queryBuilder.andWhere('blog.createdAt BETWEEN :startDate AND :endDate', {
-                startDate: createDateRange[0],
-                endDate: createDateRange[1],
-            });
-        }
+        return [baseConditions('title'), baseConditions('description')];
+    }
 
-        if (keyword) {
-            queryBuilder.andWhere('blog.title LIKE :keyword OR blog.description LIKE :keyword', {keyword: `%${keyword}%`});
-        }
+    private getSortOrder(sortStyle: string) {
+        return {
+            [SortStyles.NAME_ASC]: { title: 'ASC' },
+            [SortStyles.NAME_DESC]: { title: 'DESC' },
+            [SortStyles.DATE_ASC]: { createdAt: 'ASC' },
+            [SortStyles.DATE_DESC]: { createdAt: 'DESC' },
+        }[sortStyle] || { createdAt: 'DESC' };
+    }
+    
+    async getAll(params: GetAllParamsDto) {
+        const { page = 1, limit = 10, keyword, authors, sortStyle, createDateRange } = params;
 
-        switch (sortStyle) {
-            case SortStyles.name_asc:
-                queryBuilder.orderBy('blog.title', 'ASC');
-                break;
-            case SortStyles.name_desc:
-                queryBuilder.orderBy('blog.title', 'DESC');
-                break;
-            case SortStyles.date_asc:
-                queryBuilder.orderBy('blog.createdAt', 'ASC');
-                break;
-            case SortStyles.date_desc:
-                queryBuilder.orderBy('blog.createdAt', 'DESC');
-                break;
-            default:
-                queryBuilder.orderBy('blog.createdAt', 'DESC');
-                break;
-        }
+        const query: FindManyOptions = {
+            relations: ['author'],
+            skip: (page - 1) * limit,
+            take: limit,
+            where: this.addWhereConditions({ authors, createDateRange, keyword }),
+            order: this.getSortOrder(sortStyle),
+            select: {
+                author: { id: true, fullName: true },
+            }
+        };
 
-        const [blogs, total] = await queryBuilder.getManyAndCount();
+        const [blogs, total] = await this.blogRepository.findAndCount(query);
 
-        if (!blogs || blogs.length === 0) {
-            return { 
-                data: [],
-                total,
-                page,
-                limit,
-            };
-        }
-        const  blogsRes : ResponseBlogDto[] = blogs.map(blog => ({
-            id: blog.id,
-            title: blog.title,
-            description: blog.description,
-            coverImage: blog.coverImage,
-            slug: blog.slug,
-            author: {
-                id: blog.author.id,
-                fullName: blog.author.fullName,
-            },
-            createdAt: blog.createdAt,
-        }));
-        return { 
-            data: blogsRes,
+        return {
+            data: blogs,
             total,
             page,
             limit,
@@ -92,23 +73,14 @@ export class BlogService {
         const blog = await this.blogRepository.findOne({
             relations: ['author'],
             where: {slug: slug},
+            select: {
+                author: { id: true, fullName: true },
+            }
         });
         if (!blog) {
             throw new Error(ErrorCode.BLOG_NOT_FOUND);
         }
-        const blogRes : ResponseBlogDto = {
-            id: blog.id,
-            title: blog.title,
-            description: blog.description,
-            coverImage: blog.coverImage,
-            slug: blog.slug,
-            author: {
-                id: blog.author.id,
-                fullName: blog.author.fullName,
-            },
-            createdAt: blog.createdAt
-        };
-        return blogRes;
+        return blog;
     }
 
     async createBlog (blog : CreateBlogDto, userId : string) : Promise<Blog> {
@@ -153,12 +125,21 @@ export class BlogService {
     }
 
     async getAllAuthors () {
-        const authors = await this.blogRepository.createQueryBuilder('blog')
-            .select('author.id', 'id')
-            .addSelect('author.fullName', 'fullName')
-            .leftJoin('blog.author', 'author')
-            .groupBy('author.id')
-            .getRawMany();
-        return authors;
+        const blogs = await this.blogRepository.find({
+            relations: ['author'],
+        });
+
+        const authorsMap = new Map<string, AuthorDto>(); 
+
+        blogs.forEach(blog => {
+            if (blog.author && !authorsMap.has(blog.author.id)) {
+                authorsMap.set(blog.author.id, {
+                    id: blog.author.id,
+                    fullName: blog.author.fullName,
+                });
+            }
+        });
+
+        return Array.from(authorsMap.values());
     }
 }
