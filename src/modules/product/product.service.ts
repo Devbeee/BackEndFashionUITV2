@@ -97,15 +97,33 @@ export class ProductService {
     const slug = productInfo.name ? convertToSlug(productUpdateData.name) : '';
 
     if (!categoryId){
-      productDetails.forEach(async productDetails => {
-        const {product, productDetailId,... productDetailsUpdate} = productDetails;
-        return await this.productDetailsService.update(productDetailId, productDetailsUpdate);
-      })
+      for (const productDetail of product.productDetails) {
+        await this.productDetailsService.remove(productDetail.id);
+      }
       const productUpdateInfo = { ...productInfo, slug };
   
       Object.assign(product, productUpdateInfo);
+
+      const productUpdated = await this.productRepository.save(product);
+
+      const productDetailsData = [];
+
+      for (const productDetail of productDetails) {
+        const productDetailData = {
+          ...productDetail,
+          product: productUpdated
+        };
+
+        productDetailsData.push(productDetailData);
+      }
+    
+      await Promise.all(
+        productDetailsData.map(productDetail => 
+          this.productDetailsService.create(productDetail)
+        )
+      );
   
-      return await this.productRepository.save(product);
+      return productUpdated;
     }
     else {
       const category = await this.categoryService.findOne(categoryId);
@@ -113,15 +131,34 @@ export class ProductService {
       if (!category) {
         throw new Error(ErrorCode.CATEGORY_NOT_FOUND);
       }
-      productDetails.forEach(async productDetails => {
-        const {product, productDetailId,... productDetailsUpdate} = productDetails;
-        return await this.productDetailsService.update(productDetailId, productDetailsUpdate);
-      })
+
+      for (const productDetail of product.productDetails) {
+        await this.productDetailsService.remove(productDetail.id);
+      }
       const productUpdateInfo = { ...productInfo, category, slug };
   
       Object.assign(product, productUpdateInfo);
-  
-      return await this.productRepository.save(product);
+
+      const productUpdated = await this.productRepository.save(product);
+
+      const productDetailsData = [];
+
+      for (const productDetail of productDetails) {
+        const productDetailData = {
+          ...productDetail,
+          product: productUpdated
+        };
+
+        productDetailsData.push(productDetailData);
+      }
+    
+      await Promise.all(
+        productDetailsData.map(productDetail => 
+          this.productDetailsService.create(productDetail)
+        )
+      );
+    
+      return productUpdated;
     }
   }
 

@@ -3,7 +3,7 @@ import {
   Get, 
   Post, 
   Body, 
-  Patch, 
+  Put, 
   Param, 
   Delete, 
   NotFoundException,
@@ -59,7 +59,7 @@ export class ProductController {
     }
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') productId: string, @Body() updateProductDto: UpdateProductDto) {
     try {
       return this.productService.update(productId, updateProductDto);
