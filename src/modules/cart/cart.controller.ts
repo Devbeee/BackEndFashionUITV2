@@ -45,10 +45,10 @@ export class CartController {
   async create(@Body() createCartDto: CreateCartDto, @Req() request: Request) {
     try {
       const { id } = request['user'];
-      await this.cartService.create(id, createCartDto);
-      return handleDataResponse(
-        'Add to cart successfully!'
-      );
+      return await this.cartService.create(id, createCartDto);
+      // return handleDataResponse(
+      //   'Add to cart successfully!'
+      // );
     }
     catch (error) {
       throw new Error(error);

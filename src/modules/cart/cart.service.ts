@@ -30,7 +30,10 @@ export class CartService {
     if (!existingCart) {
       const newCart = this.cartRepository.create({ user, ...createCartDto });
       const savedCart = await this.cartRepository.save(newCart);
-      return this.addCartProduct(savedCart, createCartDto);
+      await this.addCartProduct(savedCart, createCartDto);
+
+      const cart = await this.findByUserId(userId);
+      return { cartProductLength: cart.cartProducts.length};
     }
 
     const existingCartProduct = existingCart.cartProducts?.find(
@@ -38,14 +41,20 @@ export class CartService {
     );
 
     if (existingCartProduct) {
-      return this.cartProductService.updateQuantity(
+      await this.cartProductService.updateQuantity(
         existingCartProduct.id,
         createCartDto.cartProduct as UpdateCartProductDto,
         UpdateQuantityAction.INCREMENT
       );
+
+      const cart = await this.findByUserId(userId);
+      return { cartProductLength: cart.cartProducts.length };
     }
 
-    return this.addCartProduct(existingCart, createCartDto);
+    await this.addCartProduct(existingCart, createCartDto);
+
+    const cart = await this.findByUserId(userId);
+    return { cartProductLength: cart.cartProducts.length };
   }
 
   private async addCartProduct(cart: Cart, createCartDto: CreateCartDto) {
@@ -72,6 +81,7 @@ export class CartService {
           id: true,
           quantity: true,
           productDetail: {
+            id: true,
             colorName: true,
             size: true,
             stock: true,
@@ -97,7 +107,7 @@ export class CartService {
       throw new Error(ErrorCode.CART_PRODUCT_NOT_FOUND)
     }
 
-    return await this.cartProductService.updateQuantity(cartProductId, updateCartDto.cartProduct, UpdateQuantityAction.INCREMENT);
+    return await this.cartProductService.updateQuantity(cartProductId, updateCartDto.cartProduct, UpdateQuantityAction.SET);
   }
 
   async remove(cartProductId: string, userId: string) {
@@ -114,7 +124,7 @@ export class CartService {
   async removeMultiple(cartProductIds: string[], userId: string) {
     const existingCart = await this.findByUserId(userId);
 
-    const missingIds = cartProductIds.filter((id) => 
+    const missingIds = cartProductIds.filter((id) =>
       !existingCart.cartProducts.map(cp => cp.id).includes(id));
 
     if (missingIds.length) {
