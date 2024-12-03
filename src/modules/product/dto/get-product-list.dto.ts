@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsNotEmpty, IsNumber, IsString, Min } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString, Min } from "class-validator";
 
 export class GetProductListDto {
     @ApiProperty()
@@ -15,7 +15,7 @@ export class GetProductListDto {
     limit: number;
 
     @ApiProperty()
-    @IsArray({ message: 'Sort style must be a string' })
+    @IsString({ message: 'Sort style must be a string' })
     sortStyle?: string;
 
     @ApiProperty()
