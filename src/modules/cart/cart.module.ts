@@ -11,7 +11,13 @@ import { CartController } from './cart.controller';
 import { Cart } from './entities/cart.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Cart]), ProductDetailsModule, CartProductModule, AuthModule, UsersModule],
+  imports: [
+    TypeOrmModule.forFeature([Cart]),
+    ProductDetailsModule,
+    CartProductModule,
+    AuthModule,
+    UsersModule,
+  ],
   controllers: [CartController],
   providers: [CartService],
 })

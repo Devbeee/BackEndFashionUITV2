@@ -16,9 +16,11 @@ export class CartProductService {
     @InjectRepository(CartProduct)
     private readonly cartProductRepository: Repository<CartProduct>,
     private readonly productDetailService: ProductDetailsService,
-  ) { }
+  ) {}
   async create(createCartProductDto: CreateCartProductDto) {
-    const productDetail = await this.productDetailService.findOne(createCartProductDto.productDetailId);
+    const productDetail = await this.productDetailService.findOne(
+      createCartProductDto.productDetailId,
+    );
 
     if (!productDetail) {
       throw new Error(ErrorCode.PRODUCT_DETAIL_NOT_FOUND);
@@ -35,12 +37,12 @@ export class CartProductService {
   async updateQuantity(
     id: string,
     updateCartProductDto: UpdateCartProductDto,
-    action: UpdateQuantityAction
+    action: UpdateQuantityAction,
   ) {
     const queryBuilder = this.cartProductRepository
       .createQueryBuilder()
       .update(CartProduct)
-      .where("id = :id", { id });
+      .where('id = :id', { id });
 
     if (action === UpdateQuantityAction.INCREMENT) {
       queryBuilder.set({
@@ -55,20 +57,11 @@ export class CartProductService {
     return await queryBuilder.execute();
   }
 
-
   async remove(id: string) {
-    const existedCartProduct = await this.cartProductRepository.findOne({
-      where: { id: id }
-    });
-    if (!existedCartProduct) {
-      throw new Error(ErrorCode.CART_PRODUCT_NOT_FOUND)
-    } else {
-      return await this.cartProductRepository.softRemove(existedCartProduct)
-    }
+    return await this.cartProductRepository.delete({ id: id });
   }
 
   async removeMultiple(ids: string[]) {
-    const cartProducts = await this.cartProductRepository.findBy({ id: In(ids) });
-    return await this.cartProductRepository.softRemove(cartProducts);
+    return await this.cartProductRepository.delete({ id: In(ids) });
   }
 }

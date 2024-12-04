@@ -18,7 +18,7 @@ export class CartService {
     private readonly cartRepository: Repository<Cart>,
     private readonly cartProductService: CartProductService,
     private readonly usersService: UsersService,
-  ) { }
+  ) {}
   async create(userId: string, createCartDto: CreateCartDto) {
     const user = await this.usersService.findById(userId);
     if (!user) {
@@ -33,18 +33,22 @@ export class CartService {
       await this.addCartProduct(savedCart, createCartDto);
 
       const cart = await this.findByUserId(userId);
-      return { cartProductLength: cart.cartProducts.length};
+      return { cartProductLength: cart.cartProducts.length };
     }
 
     const existingCartProduct = existingCart.cartProducts?.find(
-      (cp) => cp.productDetail.id === createCartDto.cartProduct.productDetailId
+      (cp) => cp.productDetail.id === createCartDto.cartProduct.productDetailId,
     );
 
     if (existingCartProduct) {
+      if (
+        existingCartProduct.quantity >= existingCartProduct.productDetail.stock
+      )
+        throw new Error(ErrorCode.OUT_OF_STOCK);
       await this.cartProductService.updateQuantity(
         existingCartProduct.id,
         createCartDto.cartProduct as UpdateCartProductDto,
-        UpdateQuantityAction.INCREMENT
+        UpdateQuantityAction.INCREMENT,
       );
 
       const cart = await this.findByUserId(userId);
@@ -90,47 +94,60 @@ export class CartService {
               name: true,
               price: true,
               discount: true,
-            }
-          }
-        }
+            },
+          },
+        },
       },
     });
   }
 
-  async update(cartProductId: string, updateCartDto: UpdateCartDto, userId: string) {
+  async update(
+    cartProductId: string,
+    updateCartDto: UpdateCartDto,
+    userId: string,
+  ) {
     const existingCart = await this.findByUserId(userId);
     const existingCartProduct = existingCart.cartProducts?.find(
-      (cp) => cp.id === cartProductId
+      (cp) => cp.id === cartProductId,
     );
 
     if (!existingCartProduct) {
-      throw new Error(ErrorCode.CART_PRODUCT_NOT_FOUND)
+      throw new Error(ErrorCode.CART_PRODUCT_NOT_FOUND);
     }
 
-    return await this.cartProductService.updateQuantity(cartProductId, updateCartDto.cartProduct, UpdateQuantityAction.SET);
+    return await this.cartProductService.updateQuantity(
+      cartProductId,
+      updateCartDto.cartProduct,
+      UpdateQuantityAction.SET,
+    );
   }
 
   async remove(cartProductId: string, userId: string) {
     const existingCart = await this.findByUserId(userId);
     const existingCartProduct = existingCart.cartProducts?.find(
-      (cp) => cp.id === cartProductId
+      (cp) => cp.id === cartProductId,
     );
 
     if (!existingCartProduct) {
-      throw new Error(ErrorCode.CART_PRODUCT_NOT_FOUND)
+      throw new Error(ErrorCode.CART_PRODUCT_NOT_FOUND);
     }
-    return await this.cartProductService.remove(cartProductId)
+    return await this.cartProductService.remove(cartProductId);
   }
   async removeMultiple(cartProductIds: string[], userId: string) {
     const existingCart = await this.findByUserId(userId);
 
-    const missingIds = cartProductIds.filter((id) =>
-      !existingCart.cartProducts.map(cp => cp.id).includes(id));
+    const existingProductIds = new Set(
+      existingCart.cartProducts.map((cp) => cp.id),
+    );
 
-    if (missingIds.length) {
-      throw new Error(ErrorCode.CART_PRODUCT_NOT_FOUND)
+    const missingIds = cartProductIds.filter(
+      (id) => !existingProductIds.has(id),
+    );
+
+    if (missingIds.length > 0) {
+      throw new Error(ErrorCode.CART_PRODUCT_NOT_FOUND);
     }
-    return await this.cartProductService.removeMultiple(cartProductIds)
-  }
 
+    return this.cartProductService.removeMultiple(cartProductIds);
+  }
 }
