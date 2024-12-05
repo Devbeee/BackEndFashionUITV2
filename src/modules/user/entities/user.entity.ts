@@ -1,6 +1,8 @@
 import { Role } from '@/common/enums';
 import { Contact } from '@/modules/contact/entities/contact.entity';
 import { Blog } from '@/modules/blog/entities/blog.entity';
+import { Address } from '@/modules/address/entities/address.entity';
+
 import { ApiProperty } from '@nestjs/swagger';
 
 import {
@@ -11,6 +13,8 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToMany,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity()
@@ -49,6 +53,10 @@ export class User {
   @ApiProperty()
   role: string;
 
+  @ApiProperty()
+  @Column({ type: 'uuid', nullable: true })
+  defaultAddressId: string;
+
   @CreateDateColumn({ type: 'timestamptz' })
   @ApiProperty()
   createdAt: Date;
@@ -68,4 +76,13 @@ export class User {
   @ApiProperty()
   @OneToMany(() => Blog, (blog) => blog.author)
   blogs: Blog[];
+
+  @ApiProperty()
+  @OneToMany(() => Address, (address) => address.userId)
+  addresses: Address[];
+
+  @ApiProperty()
+  @OneToOne(() => Address)
+  @JoinColumn({ name: 'defaultAddressId' })
+  defaultAddress: Address;
 }

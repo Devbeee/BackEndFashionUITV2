@@ -4,10 +4,12 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Patch,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 
@@ -26,6 +28,8 @@ import { UsersService } from './user.service';
 import { User } from './entities/user.entity';
 
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { handleDataResponse } from '@/utils';
+import { SetDefaultAddressDto } from '@/modules/user/dtos';
 
 @ApiTags('Users')
 @Controller('users')
@@ -99,5 +103,41 @@ export class UsersController {
   async me(@currentUser() user: User) {
     const userInfo = await this.usersService.findById(user.id);
     return userInfo;
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/default-address')
+  @HttpCode(200)
+  @ApiOkResponse({
+    description: 'Default address have been successfully fetched.',
+  })
+  async getDefaultAddress(@Req() request: Request) {
+    try {
+      const { id } = request['user'];
+      return await this.usersService.getDefaultAddress(id);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/default-address/:addressId')
+  @HttpCode(200)
+  @ApiOkResponse({
+    description: 'Default address have been successfully fetched.',
+  })
+  async setDefaultAddress(
+    @Param() setDefaultAddressDto: SetDefaultAddressDto,
+    @Req() request: Request,
+  ) {
+    try {
+      const { id } = request['user'];
+      return await this.usersService.setDefaultAddress(
+        setDefaultAddressDto,
+        id,
+      );
+    } catch (error) {
+      throw error;
+    }
   }
 }
