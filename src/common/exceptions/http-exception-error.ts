@@ -57,4 +57,14 @@ export const exceptionCase = {
     message: 'Category is not found',
     errorCode: ErrorCode.CATEGORY_NOT_FOUND,
   },
+  [ErrorCode.CART_PRODUCT_NOT_FOUND]: {
+    status: HttpStatus.BAD_REQUEST,
+    message: 'Cart product is not found',
+    errorCode: ErrorCode.CART_PRODUCT_NOT_FOUND,
+  },
+  [ErrorCode.OUT_OF_STOCK]: {
+    status: HttpStatus.BAD_REQUEST,
+    message: 'Not enough product in stock.',
+    errorCode: ErrorCode.OUT_OF_STOCK,
+  },
 };

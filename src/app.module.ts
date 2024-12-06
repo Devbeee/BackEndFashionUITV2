@@ -18,6 +18,8 @@ import { ProductDetailsModule } from './modules/product-details/product-details.
 import { CategoryModule } from './modules/category/category.module';
 import { ContactModule } from './modules/contact/contact.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { CartModule } from './modules/cart/cart.module';
+import { CartProductModule } from './modules/cart-product/cart-product.module';
 
 @Module({
   imports: [
@@ -62,6 +64,8 @@ import { BlogModule } from './modules/blog/blog.module';
     CategoryModule,
     ContactModule,
     BlogModule,
+    CartModule,
+    CartProductModule,
   ],
 
   providers: [
