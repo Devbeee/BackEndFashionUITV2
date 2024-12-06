@@ -28,7 +28,10 @@ export class BlogService {
         const baseConditions = (field: 'title' | 'description') => ({
             ...(authors?.length && { author: { id: In(authors) } }),
             ...(createDateRange?.length === 2 && {
-                createdAt: Between(createDateRange[0], createDateRange[1]),
+                createdAt: Between(
+                    new Date(new Date(createDateRange[0]).setUTCHours(0, 0, 0, 0)),
+                    new Date(new Date(createDateRange[1]).setUTCHours(23, 59, 59, 999)),
+                ),
             }),
             ...(keyword && { [field]: Like(`%${keyword}%`) }),
         });
@@ -55,7 +58,7 @@ export class BlogService {
             where: this.addWhereConditions({ authors, createDateRange, keyword }),
             order: this.getSortOrder(sortStyle),
             select: {
-                author: { id: true, fullName: true },
+                author: { id: true, fullName: true, avatar: true },
             }
         };
 
@@ -74,7 +77,7 @@ export class BlogService {
             relations: ['author'],
             where: {slug: slug},
             select: {
-                author: { id: true, fullName: true },
+                author: { id: true, fullName: true, avatar: true },
             }
         });
         if (!blog) {
@@ -98,6 +101,7 @@ export class BlogService {
         }
         existedBlog.title = blog.title;
         existedBlog.description = blog.description;
+        existedBlog.content = blog.content;
         existedBlog.coverImage = blog.coverImage;
         existedBlog.slug = convertToSlug(blog.title);
         return await this.blogRepository.save(existedBlog);

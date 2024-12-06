@@ -132,7 +132,9 @@ export class BlogController {
             throw error;
         }
     }
-
+    
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.Admin)
     @Patch('update/:slug')
     @HttpCode(200)
     @ApiOkResponse({
@@ -155,7 +157,9 @@ export class BlogController {
             }
         }
     }
-
+    
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.Admin)
     @Delete('delete/:slug')
     @HttpCode(204)
     @ApiNoContentResponse({
@@ -177,7 +181,9 @@ export class BlogController {
             }
         }
     }
-
+    
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.Admin) 
     @Delete('delete')
     @HttpCode(204)
     @ApiNoContentResponse({
