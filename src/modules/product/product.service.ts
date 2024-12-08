@@ -82,14 +82,14 @@ export class ProductService {
 
   private getFilterPrice(priceArray: string[]) {
     const filterPriceMap: Record<string, [number, number]> = {
-      [FilterPriceProduct.LESS_THAN_100]: [0, 100],
-      [FilterPriceProduct.FROM_100_TO_200]: [100, 200],
-      [FilterPriceProduct.FROM_200_TO_500]: [200, 500],
-      [FilterPriceProduct.FROM_500_TO_1000]: [500, 1000],
-      [FilterPriceProduct.GREATER_THAN_1000]: [1000, 2147483647],
+      [FilterPriceProduct.LESS_THAN_100]: [0, 100000],
+      [FilterPriceProduct.FROM_100_TO_200]: [100000, 200000],
+      [FilterPriceProduct.FROM_200_TO_500]: [200000, 500000],
+      [FilterPriceProduct.FROM_500_TO_1000]: [500000, 1000000],
+      [FilterPriceProduct.GREATER_THAN_1000]: [1000000, 2147483647],
       [FilterPriceProduct.DEFAULT]: [0, 2147483647]
     };
-    return priceArray.map((price) => filterPriceMap[price] || filterPriceMap['Default']);
+    return priceArray.map((price) => filterPriceMap[price] || filterPriceMap['DEFAULT']);
   }
 
   async getProductList(params: GetProductListDto) {
@@ -102,10 +102,7 @@ export class ProductService {
       categoryType, 
       colorName
     } = params;
-  
-    const pageNumber = parseInt(page.toString());
-    const limitNumber = parseInt(limit.toString());
-  
+    
     const priceArray = price ? price.split(',') : [];
     const categoryTypeArray = categoryType ? categoryType.split(',') : [];
     const colorNameArray = colorName ? colorName.split(',') : [];
@@ -148,8 +145,8 @@ export class ProductService {
     }
 
     queryBuilder
-      .skip((pageNumber - 1) * limitNumber)
-      .take(limitNumber);
+      .skip((page - 1) * limit)
+      .take(limit);
 
     if (sortOrder) {
       Object.entries(sortOrder).forEach(([key, value]) => {
@@ -161,8 +158,8 @@ export class ProductService {
     return {
         data: products,
         total,
-        page: pageNumber,
-        limit: limitNumber,
+        page: page,
+        limit: limit,
     };
   }
 
@@ -176,13 +173,17 @@ export class ProductService {
   }
 
   async findOne(productId: string) {
-    return await this.productRepository.findOne({
+    const product = await this.productRepository.findOne({
       where: { id: productId },
       relations: {
         productDetails: true,
         category: true
       }
     });
+    if (!product) {
+      throw new Error(ErrorCode.PRODUCT_NOT_FOUND);
+    }
+    return product;
   }
 
   async update(productId: string, productUpdateData: UpdateProductDto) {
@@ -196,70 +197,39 @@ export class ProductService {
 
     const slug = productInfo.name ? convertToSlug(productUpdateData.name) : '';
 
-    if (!categoryId){
-      for (const productDetail of product.productDetails) {
-        await this.productDetailsService.remove(productDetail.id);
-      }
-      const productUpdateInfo = { ...productInfo, slug };
+    const category = await this.categoryService.findOne(categoryId);
   
-      Object.assign(product, productUpdateInfo);
-
-      const productUpdated = await this.productRepository.save(product);
-
-      const productDetailsData = [];
-
-      for (const productDetail of productDetails) {
-        const productDetailData = {
-          ...productDetail,
-          product: productUpdated
-        };
-
-        productDetailsData.push(productDetailData);
-      }
-    
-      await Promise.all(
-        productDetailsData.map(productDetail => 
-          this.productDetailsService.create(productDetail)
-        )
-      );
-  
-      return productUpdated;
+    if (!category) {
+      throw new Error(ErrorCode.CATEGORY_NOT_FOUND);
     }
-    else {
-      const category = await this.categoryService.findOne(categoryId);
     
-      if (!category) {
-        throw new Error(ErrorCode.CATEGORY_NOT_FOUND);
-      }
-
-      for (const productDetail of product.productDetails) {
-        await this.productDetailsService.remove(productDetail.id);
-      }
-      const productUpdateInfo = { ...productInfo, category, slug };
-  
-      Object.assign(product, productUpdateInfo);
-
-      const productUpdated = await this.productRepository.save(product);
-
-      const productDetailsData = [];
-
-      for (const productDetail of productDetails) {
-        const productDetailData = {
-          ...productDetail,
-          product: productUpdated
-        };
-
-        productDetailsData.push(productDetailData);
-      }
-    
-      await Promise.all(
-        productDetailsData.map(productDetail => 
-          this.productDetailsService.create(productDetail)
-        )
-      );
-    
-      return productUpdated;
+    for (const productDetail of product.productDetails) {
+      await this.productDetailsService.remove(productDetail.id);
     }
+    const productUpdateInfo = { ...productInfo, category, slug };
+
+    Object.assign(product, productUpdateInfo);
+
+    const productUpdated = await this.productRepository.save(product);
+
+    const productDetailsData = [];
+
+    for (const productDetail of productDetails) {
+      const productDetailData = {
+        ...productDetail,
+        product: productUpdated
+      };
+
+      productDetailsData.push(productDetailData);
+    }
+  
+    await Promise.all(
+      productDetailsData.map(productDetail => 
+        this.productDetailsService.create(productDetail)
+      )
+    );
+
+    return productUpdated;
   }
 
   async remove(productId: string) {

@@ -1,9 +1,9 @@
 export enum SortStylesProduct {
-    DEFAULT = 'default',
-    PRICE_ASC = 'priceIncrease',
-    PRICE_DESC = 'priceDecrease',
-    NEWEST = 'newest',
-    OLDEST = 'oldest',
-    NAME_ASC = 'nameIncrease',
-    NAME_DESC = 'nameDecrease'
+    DEFAULT = 'DEFAULT',
+    PRICE_ASC = 'PRICEINCREASE',
+    PRICE_DESC = 'PRICEDECREASE',
+    NEWEST = 'NEWEST',
+    OLDEST = 'OLDEST',
+    NAME_ASC = 'NAMEINCREASE',
+    NAME_DESC = 'NAMEDECREASE'
 }

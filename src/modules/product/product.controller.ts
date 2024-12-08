@@ -60,11 +60,7 @@ export class ProductController {
   getProductList(
     @Query() params: GetProductListDto
   ) {
-    try {
       return this.productService.getProductList(params);
-    } catch (error) {
-      throw error;
-    }
   }
 
   @Get()
@@ -81,7 +77,12 @@ export class ProductController {
     try {
       return this.productService.findOne(productId);
     } catch (error) {
-      throw error;
+      if (error.message === ErrorCode.PRODUCT_NOT_FOUND) {
+        throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND);
+      }
+      else {
+        throw error;
+      }
     }
   }
 
