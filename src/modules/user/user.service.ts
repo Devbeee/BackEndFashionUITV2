@@ -125,7 +125,7 @@ export class UsersService {
     userId: string,
   ) {
     try {
-      await this.userRepository
+      return await this.userRepository
         .createQueryBuilder()
         .update(User)
         .set({

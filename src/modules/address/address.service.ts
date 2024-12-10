@@ -19,18 +19,20 @@ export class AddressService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
-  async addAddress(address: AddAddressDto, userId: string): Promise<Address> {
+  async addAddress(address: AddAddressDto, user: User): Promise<Address> {
     const newAddress = this.addressRepository.create({
       ...address,
-      userId,
+      owner: user,
     });
     await this.addressRepository.save(newAddress);
     const userAddress = await this.userRepository.findOne({
       select: {
-        defaultAddressId: true,
+        defaultAddress: {
+          id: true,
+        },
       },
       where: {
-        id: Equal(userId),
+        id: Equal(user.id),
       },
     });
 
@@ -39,14 +41,14 @@ export class AddressService {
         .createQueryBuilder()
         .update(User)
         .set({
-          defaultAddressId: newAddress.id,
+          defaultAddress: newAddress,
         })
-        .where('id = :id', { id: userId })
+        .where('id = :id', { id: user.id })
         .execute();
     }
     return newAddress;
   }
-  async getAddress(userId: string): Promise<Address[]> {
+  async getAddress(user: User): Promise<Address[]> {
     return await this.addressRepository.find({
       select: {
         id: true,
@@ -60,7 +62,7 @@ export class AddressService {
         latitude: true,
       },
       where: {
-        userId: Equal(userId),
+        owner: Equal(user.id),
       },
     });
   }
@@ -76,49 +78,40 @@ export class AddressService {
       throw new Error(ErrorCode.ADDRESS_NOT_FOUND);
     }
   }
-  async deleteAddress(deleteAddressDto: DeleteAddressDto, userId: string) {
+  async deleteAddress(deleteAddressDto: DeleteAddressDto, userId: User) {
     try {
       const userAddress = await this.userRepository.findOne({
         select: {
-          defaultAddressId: true,
+          defaultAddress: {
+            id: true,
+          },
         },
         where: {
-          id: Equal(userId),
+          id: Equal(userId.id),
         },
       });
 
-      if (userAddress?.defaultAddressId == deleteAddressDto.id) {
+      if (userAddress?.defaultAddress.id == deleteAddressDto.id) {
         const addresses = await this.addressRepository.find({
           select: {
             id: true,
           },
           where: {
-            userId: Equal(userId),
+            owner: Equal(userId),
           },
         });
-        if (addresses.length > 1) {
-          for (const address of addresses) {
-            if (address.id !== deleteAddressDto.id) {
-              await this.userRepository
-                .createQueryBuilder()
-                .update(User)
-                .set({
-                  defaultAddressId: address.id,
-                })
-                .where('id = :id', { id: userId })
-                .execute();
-              break;
-            }
+        for (const address of addresses) {
+          if (address.id !== deleteAddressDto.id) {
+            await this.userRepository
+              .createQueryBuilder()
+              .update(User)
+              .set({
+                defaultAddress: address,
+              })
+              .where('id = :id', { id: userId })
+              .execute();
+            break;
           }
-        } else {
-          await this.userRepository
-            .createQueryBuilder()
-            .update(User)
-            .set({
-              defaultAddressId: null,
-            })
-            .where('id = :id', { id: userId })
-            .execute();
         }
       }
 

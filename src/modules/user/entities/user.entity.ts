@@ -53,10 +53,6 @@ export class User {
   @ApiProperty()
   role: string;
 
-  @ApiProperty()
-  @Column({ type: 'uuid', nullable: true })
-  defaultAddressId: string;
-
   @CreateDateColumn({ type: 'timestamptz' })
   @ApiProperty()
   createdAt: Date;
@@ -78,8 +74,12 @@ export class User {
   blogs: Blog[];
 
   @ApiProperty()
-  @OneToMany(() => Address, (address) => address.userId)
+  @OneToMany(() => Address, (address) => address.owner)
   addresses: Address[];
+
+  @ApiProperty()
+  @Column({ type: 'uuid', nullable: true })
+  defaultAddressId: string;
 
   @ApiProperty()
   @OneToOne(() => Address)
