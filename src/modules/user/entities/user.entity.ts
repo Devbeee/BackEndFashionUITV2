@@ -1,6 +1,7 @@
 import { Role } from '@/common/enums';
 import { Contact } from '@/modules/contact/entities/contact.entity';
 import { Blog } from '@/modules/blog/entities/blog.entity';
+import { Cart } from '@/modules/cart/entities/cart.entity';
 import { Address } from '@/modules/address/entities/address.entity';
 
 import { ApiProperty } from '@nestjs/swagger';
@@ -53,10 +54,6 @@ export class User {
   @ApiProperty()
   role: string;
 
-  @ApiProperty()
-  @Column({ type: 'uuid', nullable: true })
-  defaultAddressId: string;
-
   @CreateDateColumn({ type: 'timestamptz' })
   @ApiProperty()
   createdAt: Date;
@@ -78,8 +75,12 @@ export class User {
   blogs: Blog[];
 
   @ApiProperty()
-  @OneToMany(() => Address, (address) => address.userId)
+  @OneToMany(() => Address, (address) => address.owner)
   addresses: Address[];
+
+  @ApiProperty()
+  @Column({ type: 'uuid', nullable: true })
+  defaultAddressId: string;
 
   @ApiProperty()
   @OneToOne(() => Address)

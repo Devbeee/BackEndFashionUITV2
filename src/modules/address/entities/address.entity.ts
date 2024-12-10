@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -63,12 +64,8 @@ export class Address {
   @ApiProperty()
   deletedAt?: Date;
 
-  @ApiProperty()
-  @Column('uuid')
-  userId: string;
-
   @ApiProperty({ type: () => User })
   @ManyToOne(() => User, (user) => user.addresses)
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'owner' })
   owner: User;
 }

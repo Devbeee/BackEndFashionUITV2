@@ -28,7 +28,6 @@ import { UsersService } from './user.service';
 import { User } from './entities/user.entity';
 
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { handleDataResponse } from '@/utils';
 import { SetDefaultAddressDto } from '@/modules/user/dtos';
 
 @ApiTags('Users')
@@ -111,10 +110,9 @@ export class UsersController {
   @ApiOkResponse({
     description: 'Default address have been successfully fetched.',
   })
-  async getDefaultAddress(@Req() request: Request) {
+  async getDefaultAddress(@currentUser() user: User) {
     try {
-      const { id } = request['user'];
-      return await this.usersService.getDefaultAddress(id);
+      return await this.usersService.getDefaultAddress(user.id);
     } catch (error) {
       throw error;
     }
@@ -128,13 +126,12 @@ export class UsersController {
   })
   async setDefaultAddress(
     @Param() setDefaultAddressDto: SetDefaultAddressDto,
-    @Req() request: Request,
+    @currentUser() user: User,
   ) {
     try {
-      const { id } = request['user'];
       return await this.usersService.setDefaultAddress(
         setDefaultAddressDto,
-        id,
+        user.id,
       );
     } catch (error) {
       throw error;

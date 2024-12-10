@@ -29,13 +29,15 @@ import { handleDataResponse } from '@/utils';
 import { AuthGuard } from '@/modules/auth/auth.guard';
 
 import { AddressService } from './address.service';
+import { currentUser } from '@/modules/user/user.decorator';
+import { User } from '@/modules/user/entities/user.entity';
 
+@UseGuards(AuthGuard)
 @ApiTags('Address')
 @Controller('addresses')
 export class AddressController {
   constructor(private readonly addressService: AddressService) {}
 
-  @UseGuards(AuthGuard)
   @Post('')
   @HttpCode(201)
   @ApiCreatedResponse({
@@ -44,34 +46,30 @@ export class AddressController {
   @ApiBadRequestResponse({ description: 'Missing input!' })
   async addAddress(
     @Body() addAddressDto: AddAddressDto,
-    @Req() request: Request,
+    @currentUser() user: User,
   ) {
     try {
-      const { id } = request['user'];
-      await this.addressService.addAddress(addAddressDto, id);
+      await this.addressService.addAddress(addAddressDto, user);
       return handleDataResponse('Address added successfully!');
     } catch (error) {
       throw error;
     }
   }
 
-  @UseGuards(AuthGuard)
   @Get('')
   @HttpCode(200)
   @ApiOkResponse({
     description: 'Addresses have been successfully fetched.',
   })
   @ApiBadRequestResponse({ description: 'Missing input!' })
-  async getAddress(@Req() request: Request) {
+  async getAddress(@currentUser() user: User) {
     try {
-      const { id } = request['user'];
-      return await this.addressService.getAddress(id);
+      return await this.addressService.getAddress(user);
     } catch (error) {
       throw error;
     }
   }
 
-  @UseGuards(AuthGuard)
   @Put('')
   @HttpCode(200)
   @ApiOkResponse({
@@ -90,7 +88,6 @@ export class AddressController {
     }
   }
 
-  @UseGuards(AuthGuard)
   @Delete('/:id')
   @HttpCode(204)
   @ApiNoContentResponse({
@@ -102,11 +99,10 @@ export class AddressController {
   @ApiBadRequestResponse({ description: 'Missing input!' })
   async deleteAddress(
     @Param() deleteAddressDto: DeleteAddressDto,
-    @Req() request: Request,
+    @currentUser() user: User,
   ) {
     try {
-      const { id } = request['user'];
-      await this.addressService.deleteAddress(deleteAddressDto, id);
+      await this.addressService.deleteAddress(deleteAddressDto, user);
       return handleDataResponse('Address updated successfully!');
     } catch (error) {
       throw error;
