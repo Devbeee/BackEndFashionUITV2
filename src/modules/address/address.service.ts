@@ -31,21 +31,18 @@ export class AddressService {
           id: true,
         },
       },
+      relations: ['defaultAddress'],
       where: {
-        id: Equal(user.id),
+        id: user.id,
       },
     });
-
-    if (!userAddress) {
-      await this.userRepository
-        .createQueryBuilder()
-        .update(User)
-        .set({
-          defaultAddress: newAddress,
-        })
-        .where('id = :id', { id: user.id })
-        .execute();
+    if (!userAddress.defaultAddress) {
+      await this.userRepository.update(
+        { id: user.id },
+        { defaultAddress: { id: newAddress.id } },
+      );
     }
+
     return newAddress;
   }
   async getAddress(user: User): Promise<Address[]> {
@@ -78,7 +75,7 @@ export class AddressService {
       throw new Error(ErrorCode.ADDRESS_NOT_FOUND);
     }
   }
-  async deleteAddress(deleteAddressDto: DeleteAddressDto, userId: User) {
+  async deleteAddress(deleteAddressDto: DeleteAddressDto, user: User) {
     try {
       const userAddress = await this.userRepository.findOne({
         select: {
@@ -86,35 +83,37 @@ export class AddressService {
             id: true,
           },
         },
+        relations: ['defaultAddress'],
         where: {
-          id: Equal(userId.id),
+          id: user.id,
         },
       });
-
-      if (userAddress?.defaultAddress.id == deleteAddressDto.id) {
+      if (userAddress?.defaultAddress?.id == deleteAddressDto.id) {
         const addresses = await this.addressRepository.find({
           select: {
             id: true,
           },
           where: {
-            owner: Equal(userId),
+            owner: Equal(user.id),
           },
         });
-        for (const address of addresses) {
-          if (address.id !== deleteAddressDto.id) {
-            await this.userRepository
-              .createQueryBuilder()
-              .update(User)
-              .set({
-                defaultAddress: address,
-              })
-              .where('id = :id', { id: userId })
-              .execute();
-            break;
+        if (addresses.length >= 2) {
+          for (const address of addresses) {
+            if (address.id !== deleteAddressDto.id) {
+              await this.userRepository.update(
+                { id: user.id },
+                { defaultAddress: { id: address.id } },
+              );
+              break;
+            }
           }
+        } else {
+          await this.userRepository.update(
+            { id: user.id },
+            { defaultAddress: null },
+          );
         }
       }
-
       await this.addressRepository
         .createQueryBuilder()
         .delete()

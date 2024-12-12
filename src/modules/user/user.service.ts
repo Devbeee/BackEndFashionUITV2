@@ -125,14 +125,10 @@ export class UsersService {
     userId: string,
   ) {
     try {
-      return await this.userRepository
-        .createQueryBuilder()
-        .update(User)
-        .set({
-          defaultAddressId: setDefaultAddressDto.addressId,
-        })
-        .where('id = :id', { id: userId })
-        .execute();
+      return await this.userRepository.update(
+        { id: userId },
+        { defaultAddress: { id: setDefaultAddressDto.addressId } },
+      );
     } catch (error) {
       throw new Error(ErrorCode.USER_NOT_FOUND);
     }
