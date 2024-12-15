@@ -21,6 +21,7 @@ import { BlogModule } from './modules/blog/blog.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CartProductModule } from './modules/cart-product/cart-product.module';
 import { AddressModule } from './modules/address/address.module';
+import { OrderModule } from '@/modules/order/order.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { AddressModule } from './modules/address/address.module';
     CartModule,
     CartProductModule,
     AddressModule,
+    OrderModule,
   ],
 
   providers: [

@@ -16,7 +16,6 @@ import {
   Param,
   Post,
   Put,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 
@@ -25,9 +24,9 @@ import {
   DeleteAddressDto,
   UpdateAddressDto,
 } from '@/modules/address/dtos';
+
 import { handleDataResponse } from '@/utils';
 import { AuthGuard } from '@/modules/auth/auth.guard';
-
 import { AddressService } from './address.service';
 import { currentUser } from '@/modules/user/user.decorator';
 import { User } from '@/modules/user/entities/user.entity';
