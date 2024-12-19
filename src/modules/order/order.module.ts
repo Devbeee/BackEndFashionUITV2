@@ -18,5 +18,6 @@ import { CartModule } from '@/modules/cart/cart.module';
   ],
   controllers: [OrderController],
   providers: [OrderService],
+  exports: [OrderService],
 })
 export class OrderModule {}

@@ -60,6 +60,22 @@ export class Order {
   @Column({ nullable: true })
   totalPrice: number;
 
+  @ApiProperty()
+  @Column({ nullable: true })
+  paymentSessionId: string;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  paymentInvoiceId: string;
+
+  @ApiProperty()
+  @Column({ nullable: true, default: null })
+  paidAt: Date;
+
+  @Column({ nullable: true, default: null })
+  @ApiProperty()
+  completedAt: Date;
+
   @CreateDateColumn({ type: 'timestamptz' })
   @ApiProperty()
   createdAt: Date;

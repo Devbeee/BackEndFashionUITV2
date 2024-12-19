@@ -7,30 +7,36 @@ import {
   UseGuards,
   HttpCode,
   Query,
+  Delete,
 } from '@nestjs/common';
 
 import {
   ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
-  ApiOkResponse,
   ApiOperation,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 
-import { OrderService } from './order.service';
 import { AuthGuard } from '@/modules/auth/auth.guard';
-import { CreateOrderDto } from '@/modules/order/dto/create-order.dto';
 import { currentUser } from '@/modules/user/user.decorator';
 import { User } from '@/modules/user/entities/user.entity';
 import { handleDataResponse } from '@/utils';
-import { GetOrdersDto } from '@/modules/order/dto/get-orders.dto';
-import { CancelOrdersDto } from '@/modules/order/dto/cancel-order.dto';
+import { OrderService } from './order.service';
+import {
+  CancelOrdersDto,
+  DeleteOrderDto,
+  GetOrderDto,
+  GetOrdersDto,
+  RestoreOrderDto,
+  UpdateOrderDto,
+  CreateOrderDto,
+} from '@/modules/order/dto';
 
 @UseGuards(AuthGuard)
-@ApiTags('Orders')
-@Controller('orders')
+@ApiTags('Order')
+@Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
@@ -40,7 +46,7 @@ export class OrderController {
   @ApiCreatedResponse({ description: 'Order created successfully!' })
   @ApiBadRequestResponse({ description: 'Missing input!' })
   @ApiBody({ description: 'Data to create order', type: CreateOrderDto })
-  async addAddress(
+  async createOrder(
     @Body() createOrderDto: CreateOrderDto,
     @currentUser() user: User,
   ) {
@@ -52,28 +58,53 @@ export class OrderController {
     }
   }
   @Get('/all')
-  @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Addresses have been successfully fetched.',
-  })
-  @ApiBadRequestResponse({ description: 'Missing input!' })
-  async getOrdersByUserId(@currentUser() user: User) {
-    try {
-      return await this.orderService.getAllOrders(user);
-    } catch (error) {
-      throw error;
-    }
-  }
-  @Get('')
   @ApiQuery({ name: 'page', required: true, type: Number })
   @ApiQuery({ name: 'keyword', required: false, type: String })
-  getOrderList(@Query() getOrdersDto: GetOrdersDto, @currentUser() user: User) {
-    return this.orderService.getOrders(getOrdersDto, user);
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'sortBy', required: false, type: String })
+  @ApiQuery({ name: 'filter', required: false, type: String })
+  async getAllOrders(@Query() getOrdersDto: GetOrdersDto) {
+    return await this.orderService.getAllOrders(getOrdersDto);
   }
 
+  @Get('/user')
+  @ApiQuery({ name: 'page', required: true, type: Number })
+  @ApiQuery({ name: 'keyword', required: false, type: String })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'sortBy', required: false, type: String })
+  @ApiQuery({ name: 'filter', required: false, type: String })
+  async getOrderList(
+    @Query() getOrdersDto: GetOrdersDto,
+    @currentUser() user: User,
+  ) {
+    return await this.orderService.getUserOrders(getOrdersDto, user);
+  }
+
+  @Get('')
+  @ApiQuery({ name: 'id', required: true, type: String })
+  async getOrder(@Query() getOrderDto: GetOrderDto) {
+    return await this.orderService.getOrder(getOrderDto);
+  }
+  @Patch('/update')
+  @ApiQuery({ name: 'id', required: true, type: String })
+  @ApiQuery({ name: 'paymentStatus', required: false, type: String })
+  @ApiQuery({ name: 'orderStatus', required: false, type: String })
+  async updateOrder(@Query() updateOrderDto: UpdateOrderDto) {
+    return await this.orderService.updateOrder(updateOrderDto);
+  }
   @Patch('/cancel')
   @ApiQuery({ name: 'id', required: true, type: String })
-  cancelOrder(@Query() cancelOrdersDto: CancelOrdersDto) {
-    return this.orderService.cancelOrder(cancelOrdersDto);
+  async cancelOrder(@Query() cancelOrdersDto: CancelOrdersDto) {
+    return await this.orderService.cancelOrder(cancelOrdersDto);
+  }
+  @Delete('/delete')
+  @ApiQuery({ name: 'id', required: true, type: String })
+  async deleteOrder(@Query() deleteOrderDto: DeleteOrderDto) {
+    return await this.orderService.deleteOrder(deleteOrderDto);
+  }
+  @Patch('/restore')
+  @ApiQuery({ name: 'id', required: true, type: String })
+  async restoreOrder(@Query() restoreOrderDto: RestoreOrderDto) {
+    return await this.orderService.restoreOrder(restoreOrderDto);
   }
 }

@@ -32,9 +32,13 @@ export class OrderProduct {
   @Column()
   slug: string;
 
-  @Column({ enum: Size, nullable: false })
+  @Column({ enum: Size })
   @ApiProperty()
   size: Size;
+
+  @ApiProperty()
+  @Column({ nullable: true })
+  colorName: string;
 
   @ApiProperty()
   @Column()

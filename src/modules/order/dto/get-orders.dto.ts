@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { SortOptions } from '@/common/enums';
+import { FilterOptions, SortOptions } from '@/common/enums';
 
 export class GetOrdersDto {
   @ApiProperty()
@@ -31,4 +31,9 @@ export class GetOrdersDto {
   @IsOptional()
   @IsEnum({ message: 'Sort option must be a valid enum' })
   sortBy?: SortOptions;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsEnum({ message: 'Sort option must be a valid enum' })
+  filter?: FilterOptions;
 }
