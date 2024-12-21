@@ -4,9 +4,13 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { OrderStatus, PaymentMethod, PaymentStatus } from '@/common/enums';
 import { Address } from '@/modules/address/entities/address.entity';
+import { Type } from 'class-transformer';
 
 export class CreateStripeUrlDto {
   @ApiProperty()
+  @IsEnum(Address, {
+    message: 'Address must be a valid enum value',
+  })
   @IsNotEmpty({ message: 'Delivery address is required' })
   address: Address;
 
@@ -41,5 +45,6 @@ export class CreateStripeUrlDto {
 
   @ApiProperty()
   @IsNumber({ allowNaN: false }, { message: 'totalPrice must be a number' })
+  @Type(() => Number)
   totalPrice: number;
 }

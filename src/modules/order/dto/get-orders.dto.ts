@@ -10,18 +10,22 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 
 import { FilterOptions, SortOptions } from '@/common/enums';
+import { Type } from 'class-transformer';
 
 export class GetOrdersDto {
   @ApiProperty()
   @IsNotEmpty({ message: 'Page number is required' })
   @IsInt({ message: 'Page must be an integer' })
   @Min(1, { message: 'Page must be at least 1' })
+  @Type(() => Number)
   page: number;
 
   @ApiProperty()
+  @IsOptional()
   @IsInt({ message: 'Limit must be an integer' })
   @Min(1, { message: 'Limit must be at least 1' })
   @Max(100, { message: 'Limit must be less than 100' })
+  @Type(() => Number)
   limit?: number;
 
   @ApiProperty()
@@ -31,11 +35,11 @@ export class GetOrdersDto {
 
   @ApiProperty()
   @IsOptional()
-  @IsEnum({ message: 'Sort option must be a valid enum' })
+  @IsEnum(SortOptions, { message: 'Sort option must be a valid enum' })
   sortBy?: SortOptions;
 
   @ApiProperty()
   @IsOptional()
-  @IsEnum({ message: 'Filter option must be a valid enum' })
+  @IsEnum(FilterOptions, { message: 'Filter option must be a valid enum' })
   filter?: FilterOptions;
 }
