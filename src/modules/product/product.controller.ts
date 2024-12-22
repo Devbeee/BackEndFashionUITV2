@@ -3,27 +3,35 @@ import {
   Get, 
   Post, 
   Body, 
-  Patch, 
+  Put, 
   Param, 
   Delete, 
   NotFoundException,
-  BadRequestException
+  BadRequestException,
+  UseGuards,
+  Query
 } from '@nestjs/common';
 
-import { ErrorCode } from '@/common/enums';
+import { ErrorCode, Role } from '@/common/enums';
 
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Roles } from '@/modules/auth/roles.decorator';
+import { AuthGuard } from '@/modules/auth/auth.guard';
+import { RolesGuard } from '@/modules/auth/roles.guard';
 
 import { ProductService } from './product.service';
 
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { GetProductListDto } from './dto/get-product-list.dto';
 
 @ApiTags('Product')
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @Post()
   create(@Body() createProductDto: CreateProductDto) {
     try {
@@ -41,6 +49,20 @@ export class ProductController {
     }
   }
 
+  @Get('list')
+  @ApiQuery({ name: 'page', required: true, type: Number })
+  @ApiQuery({ name: 'limit', required: true, type: Number })
+  @ApiQuery({ name: 'sortStyle', required: false, type: String })
+  @ApiQuery({ name: 'categoryGender', required: false, type: String })
+  @ApiQuery({ name: 'price', required: false, type: String })
+  @ApiQuery({ name: 'categoryType', required: false, type: String })
+  @ApiQuery({ name: 'colorName', required: false, type: String })
+  getProductList(
+    @Query() params: GetProductListDto
+  ) {
+      return this.productService.getProductList(params);
+  }
+
   @Get()
   findAll() {
     try {
@@ -55,11 +77,18 @@ export class ProductController {
     try {
       return this.productService.findOne(productId);
     } catch (error) {
-      throw error;
+      if (error.message === ErrorCode.PRODUCT_NOT_FOUND) {
+        throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND);
+      }
+      else {
+        throw error;
+      }
     }
   }
 
-  @Patch(':id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @Put(':id')
   update(@Param('id') productId: string, @Body() updateProductDto: UpdateProductDto) {
     try {
       return this.productService.update(productId, updateProductDto);
@@ -76,6 +105,8 @@ export class ProductController {
     }
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @Delete(':id')
   remove(@Param('id') productId: string) {
     try {

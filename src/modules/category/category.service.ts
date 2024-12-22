@@ -32,10 +32,7 @@ export class CategoryService {
 
   async findAll() {
     return await this.categoryRepository.find({
-      select: ["id", "gender", "type"],
-      relations: {
-        products: true
-      }
+      select: ["id", "gender", "type"]
     });
   }
 
