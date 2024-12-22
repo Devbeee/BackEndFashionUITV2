@@ -20,6 +20,7 @@ import { ContactModule } from './modules/contact/contact.module';
 import { BlogModule } from './modules/blog/blog.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CartProductModule } from './modules/cart-product/cart-product.module';
+import { DiscountModule } from './modules/discount/discount.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { CartProductModule } from './modules/cart-product/cart-product.module';
     BlogModule,
     CartModule,
     CartProductModule,
+    DiscountModule,
   ],
 
   providers: [

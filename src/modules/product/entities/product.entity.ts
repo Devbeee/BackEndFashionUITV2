@@ -1,57 +1,61 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-import { Category } from "@/modules/category/entities/category.entity";
-import { ProductDetail } from "@/modules/product-details/entities/product-detail.entity";
-
-import { 
-    Column, 
-    CreateDateColumn, 
-    Entity, 
-    ManyToOne, 
-    OneToMany, 
-    PrimaryGeneratedColumn, 
-    UpdateDateColumn 
-} from "typeorm";
+import { Category } from '@/modules/category/entities/category.entity';
+import { ProductDetail } from '@/modules/product-details/entities/product-detail.entity';
+import { Discount } from '@/modules/discount/entities/discount.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class Product {
-    @PrimaryGeneratedColumn('uuid')
-    @ApiProperty()
-    id: string;
+  @PrimaryGeneratedColumn('uuid')
+  @ApiProperty()
+  id: string;
 
-    @Column({ unique: true })
-    @ApiProperty()
-    name: string;
-    
-    @Column()
-    @ApiProperty()
-    description: string;
+  @Column({ unique: true })
+  @ApiProperty()
+  name: string;
 
-    @ApiProperty()
-    @Column()
-    price: number;
+  @Column()
+  @ApiProperty()
+  description: string;
 
-    @ApiProperty()
-    @Column({ unique: true })
-    slug: string;
+  @ApiProperty()
+  @Column()
+  price: number;
 
-    @ApiProperty()
-    @Column({ default: 0 })
-    discount: number;
+  @ApiProperty()
+  @Column({ unique: true })
+  slug: string;
 
-    @ApiProperty()
-    @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-    createdAt: Date;
+  @ApiProperty()
+  @Column({ default: 0 })
+  discount: number;
 
-    @ApiProperty()
-    @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-    updatedAt: Date;
+  @ApiProperty()
+  @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 
-    @ApiProperty()
-    @OneToMany(() => ProductDetail, (ProductDetail) => ProductDetail.product)
-    productDetails: ProductDetail[];
+  @ApiProperty()
+  @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  updatedAt: Date;
 
-    @ApiProperty()
-    @ManyToOne(() => Category, (category) => category.products)
-    category: Category;
+  @ApiProperty()
+  @OneToMany(() => ProductDetail, (ProductDetail) => ProductDetail.product)
+  productDetails: ProductDetail[];
+
+  @ApiProperty()
+  @ManyToOne(() => Category, (category) => category.products)
+  category: Category;
+
+  @ApiProperty()
+  @OneToMany(() => Discount, (discount) => discount.product)
+  discounts: Discount[];
 }

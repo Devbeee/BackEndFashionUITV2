@@ -63,6 +63,15 @@ export class ProductController {
       return this.productService.getProductList(params);
   }
 
+  @Get('discounted')
+  async getDiscountedProducts() {
+    try {
+      return this.productService.getDiscountedProducts();
+    } catch (error) {
+      throw error
+    }
+  }
+
   @Get()
   findAll() {
     try {

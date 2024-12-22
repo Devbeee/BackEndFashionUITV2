@@ -1,4 +1,4 @@
 export enum UpdateQuantityAction {
-    INCREMENT = 'increment',
-    SET = 'set',
-  }
+  INCREMENT = 'increment',
+  SET = 'set',
+}
