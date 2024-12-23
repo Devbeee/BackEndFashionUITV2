@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
-import { Repository } from 'typeorm';
+import { Equal, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { ErrorCode, Role } from '@/common/enums';
 
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { SetDefaultAddressDto } from '@/modules/user/dtos';
 
 @Injectable()
 export class UsersService {
@@ -93,5 +94,43 @@ export class UsersService {
 
   async activeUser(userId: string) {
     await this.userRepository.restore({ id: userId });
+  }
+
+  async getDefaultAddress(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['defaultAddress'],
+      select: {
+        defaultAddress: {
+          id: true,
+          name: true,
+          province: true,
+          district: true,
+          ward: true,
+          phoneNumber: true,
+          addressDetail: true,
+          longitude: true,
+          latitude: true,
+        },
+      },
+    });
+    if (!user || !user.defaultAddress) {
+      return null;
+    }
+    return user.defaultAddress;
+  }
+
+  async setDefaultAddress(
+    setDefaultAddressDto: SetDefaultAddressDto,
+    userId: string,
+  ) {
+    try {
+      return await this.userRepository.update(
+        { id: userId },
+        { defaultAddress: { id: setDefaultAddressDto.addressId } },
+      );
+    } catch (error) {
+      throw new Error(ErrorCode.USER_NOT_FOUND);
+    }
   }
 }
