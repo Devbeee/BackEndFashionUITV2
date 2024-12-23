@@ -2,7 +2,7 @@ import { IsNotEmpty, IsNumber, IsString, IsDateString } from 'class-validator';
 
 export class CreateDiscountDto {
   @IsNotEmpty()
-  @IsNumber()
+  @IsString()
   productId: string;
 
   @IsNotEmpty()

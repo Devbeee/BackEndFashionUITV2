@@ -126,7 +126,7 @@ export class ProductService {
     if (filterPrice.length > 0) {
       const priceConditions = filterPrice
         .map(
-          (range, index) =>
+          (_, index) =>
             `(product.price >= :min${index} AND product.price <= :max${index})`,
         )
         .join(' OR ');
@@ -252,9 +252,10 @@ export class ProductService {
       throw new Error(ErrorCode.CATEGORY_NOT_FOUND);
     }
 
-    for (const productDetail of product.productDetails) {
-      await this.productDetailsService.remove(productDetail.id);
-    }
+    await Promise.all(
+      product.productDetails.map(detail => this.productDetailsService.remove(detail.id))
+    );
+
     const productUpdateInfo = { ...productInfo, category, slug };
 
     Object.assign(product, productUpdateInfo);

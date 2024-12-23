@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ErrorCode } from '@/common/enums';
+
 import { CreateDiscountDto } from './dto/create-discount.dto';
 import { UpdateDiscountDto } from './dto/update-discount.dto';
-import { InjectRepository } from '@nestjs/typeorm';
+
 import { Discount } from './entities/discount.entity';
-import { Product } from '../product/entities/product.entity';
+
+import { Product } from '@/modules/product/entities/product.entity';
+
 import { In, Repository } from 'typeorm';
-import { ErrorCode } from '@/common/enums';
 
 @Injectable()
 export class DiscountService {
