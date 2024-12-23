@@ -160,7 +160,7 @@ export class OrderService {
       .leftJoin('orders.products', 'orderProduct')
       .leftJoin('orders.user', 'user')
       .leftJoin('orders.address', 'address');
-    if (sortBy !== SortOptions.None) {
+    if (sortBy) {
       switch (sortBy) {
         case SortOptions.DateDecrease: {
           queryBuilder.orderBy(`orders.createdAt`, 'DESC');
@@ -252,7 +252,7 @@ export class OrderService {
       .where('orders.user.id = :UserId', {
         UserId: user.id,
       });
-    if (sortBy !== SortOptions.None) {
+    if (sortBy) {
       switch (sortBy) {
         case SortOptions.DateDecrease: {
           queryBuilder.orderBy(`orders.createdAt`, 'DESC');
@@ -401,7 +401,7 @@ export class OrderService {
       id: cancelOrdersDto.id,
     });
     if (order.orderStatus === OrderStatus.Pending) {
-      order.orderStatus = OrderStatus.Canceled;
+      order.orderStatus = OrderStatus.Cancelled;
       return await this.orderRepository.save(order);
     } else {
       throw new Error(ErrorCode.ORDER_CAN_NOT_BE_CANCEL_AFTER_CONFIRMED);

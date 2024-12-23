@@ -17,12 +17,12 @@ import {
 import { AuthGuard } from '@/modules/auth/auth.guard';
 import { User } from '@/modules/user/entities/user.entity';
 import { currentUser } from '@/modules/user/user.decorator';
-import { StripeService } from '@/stripe/stripe.service';
+import { StripeService } from '@/modules/stripe/stripe.service';
 import {
   CreateStripeUrlDto,
   RepayStripeDto,
   VerifyPaymentDto,
-} from '@/stripe/dto';
+} from '@/modules/stripe/dto';
 
 @UseGuards(AuthGuard)
 @ApiTags('Stripe')
