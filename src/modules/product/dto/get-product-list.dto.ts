@@ -9,12 +9,6 @@ export class GetProductListDto {
     page: number;
 
     @ApiProperty()
-    @IsNumber({  }, { message: 'Limit must be a number' })
-    @IsNotEmpty({ message: 'Limit is required' })
-    @Min(1, { message: 'Limit must be greater than or equal to 1' })
-    limit: number;
-
-    @ApiProperty()
     @IsString({ message: 'Sort style must be a string' })
     sortStyle?: string;
 
