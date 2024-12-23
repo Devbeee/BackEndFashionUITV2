@@ -1,6 +1,6 @@
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import Stripe from 'stripe';
 
@@ -26,7 +26,8 @@ export class StripeService {
     private readonly orderRepository: Repository<Order>,
 
     private readonly orderService: OrderService,
-    private readonly stripe = new Stripe(process.env.STRIPE_SECRET_KEY),
+    @Inject('STRIPE_CLIENT')
+    private readonly stripe: Stripe,
   ) {}
   async createStripeUrl(createStripeUrlDto: CreateStripeUrlDto, user: User) {
     const order = await this.orderService.create(createStripeUrlDto, user);
