@@ -2,9 +2,9 @@ import {
   Body,
   Controller,
   HttpCode,
+  Param,
   Patch,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -69,13 +69,13 @@ export class StripeController {
     }
   }
 
-  @Patch('/verify-payment')
+  @Patch('/verify-payment/:orderId')
   @HttpCode(200)
   @ApiBody({
     description: 'Data to create stripe url',
     type: CreateStripeUrlDto,
   })
-  async verifyPayment(@Query() verifyPaymentDto: VerifyPaymentDto) {
+  async verifyPayment(@Param() verifyPaymentDto: VerifyPaymentDto) {
     try {
       return await this.stripeService.verifyPayment(verifyPaymentDto);
     } catch (error) {

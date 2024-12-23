@@ -7,6 +7,7 @@ import * as cookieParser from 'cookie-parser';
 import { CustomExceptionFilter } from '@/common/exceptions';
 
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -32,6 +33,17 @@ async function bootstrap() {
   app.use(cookieParser());
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new CustomExceptionFilter());
+  // app.useGlobalPipes(
+  //   new ValidationPipe({
+  //     whitelist: true,
+  //     forbidNonWhitelisted: false,
+  //     transform: true,
+  //     exceptionFactory: (errors) => {
+  //       console.error(errors);
+  //       return new Error('Validation failed');
+  //     },
+  //   }),
+  // );
   await app.listen(port);
 }
 bootstrap();

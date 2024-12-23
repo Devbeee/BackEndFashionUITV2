@@ -8,6 +8,7 @@ import {
   HttpCode,
   Query,
   Delete,
+  Param,
 } from '@nestjs/common';
 
 import {
@@ -80,31 +81,36 @@ export class OrderController {
     return await this.orderService.getUserOrders(getOrdersDto, user);
   }
 
-  @Get('')
+  @Get('/:id')
   @ApiQuery({ name: 'id', required: true, type: String })
-  async getOrder(@Query() getOrderDto: GetOrderDto) {
+  async getOrder(@Param() getOrderDto: GetOrderDto) {
     return await this.orderService.getOrder(getOrderDto);
   }
-  @Patch('/update')
+  @Patch('/update/:id')
   @ApiQuery({ name: 'id', required: true, type: String })
   @ApiQuery({ name: 'paymentStatus', required: false, type: String })
   @ApiQuery({ name: 'orderStatus', required: false, type: String })
-  async updateOrder(@Query() updateOrderDto: UpdateOrderDto) {
-    return await this.orderService.updateOrder(updateOrderDto);
+  async updateOrder(
+    @Param() params: { id: string },
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
+    console.log(updateOrderDto);
+    console.log(params.id);
+    return await this.orderService.updateOrder(params.id, updateOrderDto);
   }
-  @Patch('/cancel')
+  @Patch('/cancel/:id')
   @ApiQuery({ name: 'id', required: true, type: String })
-  async cancelOrder(@Query() cancelOrdersDto: CancelOrdersDto) {
+  async cancelOrder(@Param() cancelOrdersDto: CancelOrdersDto) {
     return await this.orderService.cancelOrder(cancelOrdersDto);
   }
-  @Delete('/delete')
+  @Delete('/delete/:id')
   @ApiQuery({ name: 'id', required: true, type: String })
-  async deleteOrder(@Query() deleteOrderDto: DeleteOrderDto) {
+  async deleteOrder(@Param() deleteOrderDto: DeleteOrderDto) {
     return await this.orderService.deleteOrder(deleteOrderDto);
   }
-  @Patch('/restore')
+  @Patch('/restore/:id')
   @ApiQuery({ name: 'id', required: true, type: String })
-  async restoreOrder(@Query() restoreOrderDto: RestoreOrderDto) {
+  async restoreOrder(@Param() restoreOrderDto: RestoreOrderDto) {
     return await this.orderService.restoreOrder(restoreOrderDto);
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { Address } from './entities/address.entity';
 import {
@@ -59,7 +59,9 @@ export class AddressService {
         latitude: true,
       },
       where: {
-        owner: Equal(user.id),
+        owner: {
+          id: user.id,
+        },
       },
     });
   }
@@ -94,7 +96,9 @@ export class AddressService {
             id: true,
           },
           where: {
-            owner: Equal(user.id),
+            owner: {
+              id: user.id,
+            },
           },
         });
         if (addresses.length >= 2) {
@@ -114,12 +118,7 @@ export class AddressService {
           );
         }
       }
-      await this.addressRepository
-        .createQueryBuilder()
-        .delete()
-        .from(Address)
-        .where('id = :id', { id: deleteAddressDto.id })
-        .execute();
+      this.addressRepository.delete({ id: deleteAddressDto.id });
     } catch (error) {
       throw new Error(ErrorCode.ADDRESS_NOT_FOUND);
     }

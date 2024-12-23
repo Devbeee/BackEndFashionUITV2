@@ -359,38 +359,42 @@ export class OrderService {
     });
     return order;
   }
-  async updateOrder(updateOrdersDto: UpdateOrderDto) {
-    const order = await this.orderRepository.findOneBy({
-      id: updateOrdersDto.id,
-    });
-    if (!updateOrdersDto.orderStatus && !updateOrdersDto.paymentStatus) {
-      throw new Error(ErrorCode.MISSING_PARAM_TO_UPDATE_ORDER);
-    } else if (
-      updateOrdersDto.paymentStatus &&
-      updateOrdersDto.paymentStatus !== order.paymentStatus
-    ) {
-      if (updateOrdersDto.paymentStatus === PaymentStatus.Paid) {
-        order.paymentStatus = PaymentStatus.Paid;
-        order.paidAt = new Date();
-      } else {
-        if (order.paymentInvoiceId) {
-          order.paymentInvoiceId = null;
-        }
-        order.paymentStatus = PaymentStatus.Unpaid;
-        order.paidAt = null;
+  private updatePaymentStatus(order: Order, paymentStatus: PaymentStatus) {
+    if (paymentStatus === PaymentStatus.Paid) {
+      order.paymentStatus = PaymentStatus.Paid;
+      order.paidAt = new Date();
+    } else {
+      order.paymentStatus = PaymentStatus.Unpaid;
+      order.paidAt = null;
+      if (order.paymentInvoiceId) {
+        order.paymentInvoiceId = null;
       }
-    } else if (
-      updateOrdersDto.orderStatus &&
-      updateOrdersDto.orderStatus !== order.orderStatus
-    ) {
-      if (order.orderStatus === OrderStatus.Delivered) {
-        order.completedAt = null;
-      } else if (updateOrdersDto.orderStatus === OrderStatus.Delivered) {
-        order.completedAt = new Date();
-      }
-      order.orderStatus = updateOrdersDto.orderStatus;
     }
-    return await this.orderRepository.save(order);
+  }
+  private updateOrderStatus(order: Order, orderStatus: OrderStatus) {
+    if (orderStatus === OrderStatus.Delivered) {
+      order.completedAt = new Date();
+    } else if (order.orderStatus === OrderStatus.Delivered) {
+      order.completedAt = null;
+    }
+    order.orderStatus = orderStatus;
+  }
+  async updateOrder(orderId: string, updateOrdersDto: UpdateOrderDto) {
+    const order = await this.orderRepository.findOneBy({ id: orderId });
+    if (!order) {
+      throw new Error(ErrorCode.ORDER_NOT_FOUND);
+    }
+    const { orderStatus, paymentStatus } = updateOrdersDto;
+    if (!orderStatus && !paymentStatus) {
+      throw new Error(ErrorCode.MISSING_PARAM_TO_UPDATE_ORDER);
+    }
+    if (paymentStatus && paymentStatus !== order.paymentStatus) {
+      this.updatePaymentStatus(order, paymentStatus);
+    }
+    if (orderStatus && orderStatus !== order.orderStatus) {
+      this.updateOrderStatus(order, orderStatus);
+    }
+    return this.orderRepository.save(order);
   }
   async cancelOrder(cancelOrdersDto: CancelOrdersDto) {
     const order = await this.orderRepository.findOneBy({

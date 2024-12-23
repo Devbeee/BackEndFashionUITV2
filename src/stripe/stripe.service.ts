@@ -26,9 +26,9 @@ export class StripeService {
     private readonly orderRepository: Repository<Order>,
 
     private readonly orderService: OrderService,
+    private readonly stripe = new Stripe(process.env.STRIPE_SECRET_KEY),
   ) {}
   async createStripeUrl(createStripeUrlDto: CreateStripeUrlDto, user: User) {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const order = await this.orderService.create(createStripeUrlDto, user);
     const lineItems = order.orderProducts.map((item) => {
       return {
@@ -43,7 +43,8 @@ export class StripeService {
         quantity: item.quantity,
       };
     });
-    const session = await stripe.checkout.sessions.create({
+    const returnUrl = `${process.env.CLIENT_URLS.split(',')[0]}/verify-payment/?orderId=${order.orderId}&sessionId={CHECKOUT_SESSION_ID}`;
+    const session = await this.stripe.checkout.sessions.create({
       line_items: lineItems,
       mode: 'payment',
       metadata: {
@@ -52,8 +53,8 @@ export class StripeService {
 
       expand: ['payment_intent'],
 
-      success_url: `${process.env.CLIENT_URLS.split(',')[0]}/verify-payment/?orderId=${order.orderId}&sessionId={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URLS.split(',')[0]}/verify-payment/?orderId=${order.orderId}&sessionId={CHECKOUT_SESSION_ID}`,
+      success_url: returnUrl,
+      cancel_url: returnUrl,
     });
     const existedOrder = await this.orderRepository.findOne({
       where: {
@@ -85,6 +86,7 @@ export class StripeService {
         quantity: item.quantity,
       };
     });
+    const returnUrl = `${process.env.CLIENT_URLS.split(',')[0]}/verify-payment/?orderId=${order.id}&sessionId={CHECKOUT_SESSION_ID}`;
     const session = await stripe.checkout.sessions.create({
       line_items: lineItems,
       mode: 'payment',
@@ -92,8 +94,8 @@ export class StripeService {
         order_id: order.id,
       },
       expand: ['payment_intent'],
-      success_url: `${process.env.CLIENT_URLS.split(',')[0]}/verify-payment/?orderId=${order.id}&sessionId={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URLS.split(',')[0]}/verify-payment/?orderId=${order.id}&sessionId={CHECKOUT_SESSION_ID}`,
+      success_url: returnUrl,
+      cancel_url: returnUrl,
     });
 
     order.paymentSessionId = session.id;
@@ -103,22 +105,21 @@ export class StripeService {
   }
 
   async verifyPayment(verifyPaymentDto: VerifyPaymentDto) {
-    const { orderId, sessionId } = verifyPaymentDto;
+    const { orderId } = verifyPaymentDto;
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const order = await this.orderRepository.findOne({
       where: {
         id: orderId,
       },
     });
-    const session = await stripe.checkout.sessions.retrieve(
-      sessionId ? sessionId : order.paymentSessionId,
+    const session = await this.stripe.checkout.sessions.retrieve(
+      order.paymentSessionId,
     );
 
     if (session.payment_status === 'paid') {
       const paymentIntentId = session.payment_intent as Stripe.PaymentIntent;
 
-      await stripe.paymentIntents.update(paymentIntentId.toString(), {
+      await this.stripe.paymentIntents.update(paymentIntentId.toString(), {
         metadata: {
           order_id: orderId,
         },

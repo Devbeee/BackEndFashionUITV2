@@ -1,39 +1,37 @@
 export enum PaymentStatus {
-  Paid = 'paid',
-  Unpaid = 'unpay',
+  Paid = 'PAID',
+  Unpaid = 'UNPAID',
 }
-
 export enum VerifyPaymentStatus {
-  Failed = 'failed',
-  Success = 'success',
+  Failed = 'FAILED',
+  Success = 'SUCCESS',
 }
-
 export enum OrderStatus {
-  Delivered = 'delivered',
-  Delivering = 'delivering',
-  Confirmed = 'confirmed',
-  Pending = 'pending',
-  Canceled = 'canceled',
+  Delivered = 'DELIVERED',
+  Delivering = 'DELIVERING',
+  Confirmed = 'CONFIRMED',
+  Pending = 'PENDING',
+  Canceled = 'CANCELLED',
 }
 
 export enum PaymentMethod {
-  Stripe = 'stripe',
-  COD = 'cod',
+  Stripe = 'STRIPE',
+  COD = 'COD',
 }
 
 export enum SortOptions {
-  DateDecrease = 'date-decrease',
-  DateIncrease = 'date-increase',
-  PriceDecrease = 'price-decrease',
-  PriceIncrease = 'price-increase',
-  None = 'none',
+  DateDecrease = 'DATE-DECREASE',
+  DateIncrease = 'DATE-INCREASE',
+  PriceDecrease = 'PRICE-DECREASE',
+  PriceIncrease = 'PRICE-INCREASE',
+  None = 'NONE',
 }
 
 export enum FilterOptions {
-  Delivered = 'delivered',
-  Delivering = 'delivering',
-  Confirmed = 'confirmed',
-  Pending = 'pending',
-  Canceled = 'canceled',
-  None = 'none',
+  Delivered = 'DELIVERED',
+  Delivering = 'DELIVERING',
+  Confirmed = 'CONFIRMED',
+  Pending = 'PENDING',
+  Canceled = 'CANCELLED',
+  None = 'NONE',
 }
