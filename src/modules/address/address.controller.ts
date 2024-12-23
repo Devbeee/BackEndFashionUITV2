@@ -16,7 +16,6 @@ import {
   Param,
   Post,
   Put,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 
@@ -25,9 +24,9 @@ import {
   DeleteAddressDto,
   UpdateAddressDto,
 } from '@/modules/address/dtos';
+
 import { handleDataResponse } from '@/utils';
 import { AuthGuard } from '@/modules/auth/auth.guard';
-
 import { AddressService } from './address.service';
 import { currentUser } from '@/modules/user/user.decorator';
 import { User } from '@/modules/user/entities/user.entity';
@@ -48,12 +47,8 @@ export class AddressController {
     @Body() addAddressDto: AddAddressDto,
     @currentUser() user: User,
   ) {
-    try {
-      await this.addressService.addAddress(addAddressDto, user);
-      return handleDataResponse('Address added successfully!');
-    } catch (error) {
-      throw error;
-    }
+    await this.addressService.addAddress(addAddressDto, user);
+    return handleDataResponse('Address added successfully!');
   }
 
   @Get('')
@@ -63,11 +58,7 @@ export class AddressController {
   })
   @ApiBadRequestResponse({ description: 'Missing input!' })
   async getAddress(@currentUser() user: User) {
-    try {
-      return await this.addressService.getAddress(user);
-    } catch (error) {
-      throw error;
-    }
+    return await this.addressService.getAddress(user);
   }
 
   @Put('')
@@ -80,12 +71,8 @@ export class AddressController {
   })
   @ApiBadRequestResponse({ description: 'Missing input!' })
   async updateAddress(@Body() updateAddressDto: UpdateAddressDto) {
-    try {
-      await this.addressService.updateAddress(updateAddressDto);
-      return handleDataResponse('Address updated successfully!');
-    } catch (error) {
-      throw error;
-    }
+    await this.addressService.updateAddress(updateAddressDto);
+    return handleDataResponse('Address updated successfully!');
   }
 
   @Delete('/:id')
@@ -101,11 +88,7 @@ export class AddressController {
     @Param() deleteAddressDto: DeleteAddressDto,
     @currentUser() user: User,
   ) {
-    try {
-      await this.addressService.deleteAddress(deleteAddressDto, user);
-      return handleDataResponse('Address updated successfully!');
-    } catch (error) {
-      throw error;
-    }
+    await this.addressService.deleteAddress(deleteAddressDto, user);
+    return handleDataResponse('Address updated successfully!');
   }
 }
