@@ -22,7 +22,7 @@ import { CartModule } from './modules/cart/cart.module';
 import { CartProductModule } from './modules/cart-product/cart-product.module';
 import { AddressModule } from './modules/address/address.module';
 import { OrderModule } from '@/modules/order/order.module';
-import { StripeModule } from './stripe/stripe.module';
+import { StripeModule } from './modules/stripe/stripe.module';
 import { DiscountModule } from './modules/discount/discount.module';
 
 @Module({

@@ -17,7 +17,7 @@ import {
   VerifyPaymentDto,
   CreateStripeUrlDto,
   RepayStripeDto,
-} from '@/stripe/dto';
+} from '@/modules/stripe/dto';
 
 @Injectable()
 export class StripeService {
