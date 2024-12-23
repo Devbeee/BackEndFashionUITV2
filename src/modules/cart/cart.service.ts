@@ -1,3 +1,4 @@
+import { ProductService } from './../product/product.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -18,6 +19,7 @@ export class CartService {
     private readonly cartRepository: Repository<Cart>,
     private readonly cartProductService: CartProductService,
     private readonly usersService: UsersService,
+    private readonly productService: ProductService,
   ) {}
   async create(userId: string, createCartDto: CreateCartDto) {
     const user = await this.usersService.findById(userId);
@@ -70,7 +72,7 @@ export class CartService {
   }
 
   async findByUserId(userId: string) {
-    return await this.cartRepository.findOne({
+    const cartItems = await this.cartRepository.findOne({
       where: { user: { id: userId } },
       relations: {
         cartProducts: {
@@ -91,6 +93,7 @@ export class CartService {
             stock: true,
             imgUrl: true,
             product: {
+              id: true,
               name: true,
               price: true,
               discount: true,
@@ -100,6 +103,31 @@ export class CartService {
         },
       },
     });
+
+    const updatedCartProducts = await Promise.all(
+      cartItems.cartProducts.map(async (cartProduct) => {
+        const productDetail = cartProduct.productDetail;
+        const product = productDetail.product;
+        const effectiveDiscount =
+          await this.productService.getEffectiveDiscount(product.id);
+
+        return {
+          ...cartProduct,
+          productDetail: {
+            ...productDetail,
+            product: {
+              ...product,
+              discount: effectiveDiscount,
+            },
+          },
+        };
+      }),
+    );
+
+    return {
+      id: cartItems.id,
+      cartProducts: updatedCartProducts,
+    } as Cart;
   }
 
   async update(

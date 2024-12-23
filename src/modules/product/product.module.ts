@@ -14,5 +14,6 @@ import { ProductController } from './product.controller';
   imports: [TypeOrmModule.forFeature([Product]), ProductDetailsModule, CategoryModule, AuthModule],
   controllers: [ProductController],
   providers: [ProductService],
+  exports: [ProductService]
 })
 export class ProductModule {}

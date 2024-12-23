@@ -67,4 +67,14 @@ export const exceptionCase = {
     message: 'Not enough product in stock.',
     errorCode: ErrorCode.OUT_OF_STOCK,
   },
+  [ErrorCode.DISCOUNT_ALREADY_EXIST]: {
+    status: HttpStatus.CONFLICT,
+    message: 'Discount already exists.',
+    errorCode: ErrorCode.DISCOUNT_ALREADY_EXIST,
+  },
+  [ErrorCode.DISCOUNT_NOT_FOUND]: {
+    status: HttpStatus.BAD_REQUEST,
+    message: 'Discount is not found.',
+    errorCode: ErrorCode.DISCOUNT_NOT_FOUND,
+  },
 };
