@@ -93,9 +93,9 @@ export class ProductService {
   }
 
   async getProductList(params: GetProductListDto) {
+    const limit = 12;
     const { 
       page, 
-      limit, 
       sortStyle, 
       categoryGender, 
       price, 
@@ -158,8 +158,7 @@ export class ProductService {
     return {
         data: products,
         total,
-        page: page,
-        limit: limit,
+        page: page
     };
   }
 
