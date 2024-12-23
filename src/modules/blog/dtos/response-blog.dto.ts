@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { AuthorDto } from './author.dto';
+
 export class ResponseBlogDto {
   @ApiProperty()
   id: string;
@@ -16,8 +18,8 @@ export class ResponseBlogDto {
   @ApiProperty()
   slug: string;
   
-  @ApiProperty()
-  author: string;
+  @ApiProperty({ type: AuthorDto})
+  author: AuthorDto;
 
   @ApiProperty()
   createdAt: Date;
