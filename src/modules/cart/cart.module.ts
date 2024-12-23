@@ -5,6 +5,7 @@ import { ProductDetailsModule } from '@/modules/product-details/product-details.
 import { CartProductModule } from '@/modules/cart-product/cart-product.module';
 import { UsersModule } from '@/modules/user/user.module';
 import { AuthModule } from '@/modules/auth/auth.module';
+import { ProductModule } from '@/modules/product/product.module';
 
 import { CartService } from './cart.service';
 import { CartController } from './cart.controller';
@@ -17,6 +18,7 @@ import { Cart } from './entities/cart.entity';
     CartProductModule,
     AuthModule,
     UsersModule,
+    ProductModule
   ],
   controllers: [CartController],
   providers: [CartService],
