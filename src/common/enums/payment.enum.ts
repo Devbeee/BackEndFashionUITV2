@@ -11,7 +11,7 @@ export enum OrderStatus {
   Delivering = 'DELIVERING',
   Confirmed = 'CONFIRMED',
   Pending = 'PENDING',
-  Canceled = 'CANCELLED',
+  Cancelled = 'CANCELLED',
 }
 
 export enum PaymentMethod {
@@ -24,7 +24,6 @@ export enum SortOptions {
   DateIncrease = 'DATE-INCREASE',
   PriceDecrease = 'PRICE-DECREASE',
   PriceIncrease = 'PRICE-INCREASE',
-  None = 'NONE',
 }
 
 export enum FilterOptions {
