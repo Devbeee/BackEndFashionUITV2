@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class GetProductListDto {
   @ApiProperty()
@@ -7,13 +13,6 @@ export class GetProductListDto {
   @IsNotEmpty({ message: 'Page is required' })
   @Min(1, { message: 'Page must be greater than or equal to 1' })
   page: number;
-
-  @ApiProperty()
-  @IsNumber({}, { message: 'Limit must be a number' })
-  @IsNotEmpty({ message: 'Limit is required' })
-  @Min(1, { message: 'Limit must be greater than or equal to 1' })
-  @Max(100, { message: 'Limit must be less than or equal to 100' })
-  limit: number;
 
   @ApiProperty()
   @IsString({ message: 'Sort style must be a string' })

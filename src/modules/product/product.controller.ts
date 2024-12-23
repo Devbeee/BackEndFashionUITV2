@@ -51,7 +51,6 @@ export class ProductController {
 
   @Get('list')
   @ApiQuery({ name: 'page', required: true, type: Number })
-  @ApiQuery({ name: 'limit', required: true, type: Number })
   @ApiQuery({ name: 'sortStyle', required: false, type: String })
   @ApiQuery({ name: 'categoryGender', required: false, type: String })
   @ApiQuery({ name: 'price', required: false, type: String })

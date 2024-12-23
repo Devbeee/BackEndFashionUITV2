@@ -100,14 +100,14 @@ export class ProductService {
   }
 
   async getProductList(params: GetProductListDto) {
-    const {
-      page,
-      limit,
-      sortStyle,
-      categoryGender,
-      price,
-      categoryType,
-      colorName,
+    const limit = 12;
+    const { 
+      page, 
+      sortStyle, 
+      categoryGender, 
+      price, 
+      categoryType, 
+      colorName
     } = params;
 
     const priceArray = price ? price.split(',') : [];
@@ -177,10 +177,9 @@ export class ProductService {
     );
 
     return {
-      data: updatedProducts,
-      total,
-      page: page,
-      limit: limit,
+        data: updatedProducts,
+        total,
+        page: page
     };
   }
 

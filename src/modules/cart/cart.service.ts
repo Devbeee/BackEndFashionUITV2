@@ -97,6 +97,7 @@ export class CartService {
               name: true,
               price: true,
               discount: true,
+              slug: true,
             },
           },
         },

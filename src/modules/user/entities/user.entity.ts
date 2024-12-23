@@ -1,7 +1,8 @@
 import { Role } from '@/common/enums';
 import { Contact } from '@/modules/contact/entities/contact.entity';
 import { Blog } from '@/modules/blog/entities/blog.entity';
-import { Cart } from '@/modules/cart/entities/cart.entity';
+import { Address } from '@/modules/address/entities/address.entity';
+
 import { ApiProperty } from '@nestjs/swagger';
 
 import {
@@ -13,7 +14,9 @@ import {
   DeleteDateColumn,
   OneToMany,
   OneToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Order } from '@/modules/order/entities/order.entity';
 
 @Entity()
 export class User {
@@ -70,4 +73,21 @@ export class User {
   @ApiProperty()
   @OneToMany(() => Blog, (blog) => blog.author)
   blogs: Blog[];
+
+  @ApiProperty()
+  @OneToMany(() => Address, (address) => address.owner)
+  addresses: Address[];
+
+  @ApiProperty()
+  @OneToMany(() => Order, (order) => order.user)
+  orders: Order[];
+
+  @ApiProperty()
+  @Column({ type: 'uuid', nullable: true })
+  defaultAddressId: string;
+
+  @ApiProperty()
+  @OneToOne(() => Address)
+  @JoinColumn({ name: 'defaultAddressId' })
+  defaultAddress: Address;
 }
