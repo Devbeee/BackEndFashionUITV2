@@ -25,6 +25,10 @@ export class Blog {
   @ApiProperty()
   @Column('text')
   description: string;
+
+  @ApiProperty()
+  @Column('text')
+  content: string;
   
   @ApiProperty()
   @Column('text')

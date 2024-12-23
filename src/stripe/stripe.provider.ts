@@ -1,5 +1,6 @@
-import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
+
+import { ConfigService } from '@nestjs/config';
 
 export const StripeProvider = {
   provide: 'STRIPE_CLIENT',

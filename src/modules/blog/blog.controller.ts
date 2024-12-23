@@ -5,7 +5,6 @@ import {
     Get, 
     HttpCode, 
     NotFoundException, 
-    BadRequestException,
     Param, 
     Patch, 
     Post, 
@@ -34,6 +33,7 @@ import { RolesGuard } from '@/modules/auth/roles.guard';
 import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dtos/create-blog.dto';
 import { UpdateBlogDto } from './dtos/update-blog.dto';
+import { GetAllParamsDto } from './dtos/get-all-params.dto';
 
 @ApiTags('Blogs')
 @Controller('blogs')
@@ -50,15 +50,18 @@ export class BlogController {
     })
     @ApiQuery({ name: 'page', required: false, type: Number})
     @ApiQuery({ name: 'limit', required: false, type: Number})
-    async getAll(@Query('page') page: number, @Query('limit') limit: number) {
-        if (isNaN(page) || page <= 0) {
-            throw new BadRequestException(ErrorCode.PAGE_INVALID);
-        }
-        if (isNaN(limit) || limit <= 0) {
-            throw new BadRequestException(ErrorCode.LIMIT_INVALID);
+    @ApiQuery({ name: 'keyword', required: false, type: String })
+    @ApiQuery({ name: 'sortStyle', required: false, type: String })
+    @ApiQuery({ name: 'authors', required: false, type: [String] })
+    @ApiQuery({ name: 'createDateRange', required: false, type: [Date] })
+    async getAll(
+        @Query() params : GetAllParamsDto
+    ) {
+        if(params.authors && !Array.isArray(params.authors)) {
+            params.authors = [params.authors];
         }
         try {
-            return await this.blogService.getAll(page, limit);
+            return await this.blogService.getAll(params);
         }
         catch (error) {
             if (error.message === ErrorCode.BLOG_NOT_FOUND) {
@@ -68,6 +71,28 @@ export class BlogController {
             }
         }
     }
+
+    @Get('authors')
+    @HttpCode(200)
+    @ApiOkResponse({
+        description: 'The authors have been successfully fetched.',
+    })
+    @ApiNotFoundResponse({
+        description: 'Authors not found.',
+    })
+    async getAllAuthors() {
+        try {
+            return await this.blogService.getAllAuthors();
+        }
+        catch (error) {
+            if (error.message === ErrorCode.BLOG_NOT_FOUND) {
+                throw new NotFoundException(ErrorCode.BLOG_NOT_FOUND);
+            } else {
+                throw error;
+            }
+        }
+    }
+
     @Get('/:slug')
     @HttpCode(200)
     @ApiOkResponse({
@@ -107,7 +132,9 @@ export class BlogController {
             throw error;
         }
     }
-
+    
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.Admin)
     @Patch('update/:slug')
     @HttpCode(200)
     @ApiOkResponse({
@@ -130,7 +157,9 @@ export class BlogController {
             }
         }
     }
-
+    
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.Admin)
     @Delete('delete/:slug')
     @HttpCode(204)
     @ApiNoContentResponse({
@@ -152,7 +181,9 @@ export class BlogController {
             }
         }
     }
-
+    
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles(Role.Admin) 
     @Delete('delete')
     @HttpCode(204)
     @ApiNoContentResponse({

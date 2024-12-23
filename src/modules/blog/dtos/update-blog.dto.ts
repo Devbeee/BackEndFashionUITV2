@@ -10,6 +10,10 @@ export class UpdateBlogDto {
     @ApiProperty()
     description: string;
   
+    @IsNotEmpty({ message: 'Description is required' })
+    @ApiProperty()
+    content: string;
+  
     @IsNotEmpty({ message: 'Cover image is required' })
     @ApiProperty()
     coverImage: string;
