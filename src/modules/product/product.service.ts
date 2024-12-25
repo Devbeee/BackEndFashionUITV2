@@ -19,12 +19,15 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { GetProductListDto } from './dto/get-product-list.dto';
 
 import { Repository } from 'typeorm';
+import { OrderProduct } from '../order/entities/order-product.entity';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(OrderProduct)
+    private readonly orderProductRepository: Repository<OrderProduct>,
     private readonly productDetailsService: ProductDetailsService,
     private readonly categoryService: CategoryService,
   ) {}
@@ -101,14 +104,8 @@ export class ProductService {
 
   async getProductList(params: GetProductListDto) {
     const limit = 12;
-    const { 
-      page, 
-      sortStyle, 
-      categoryGender, 
-      price, 
-      categoryType, 
-      colorName
-    } = params;
+    const { page, sortStyle, categoryGender, price, categoryType, colorName } =
+      params;
 
     const priceArray = price ? price.split(',') : [];
     const categoryTypeArray = categoryType ? categoryType.split(',') : [];
@@ -177,9 +174,9 @@ export class ProductService {
     );
 
     return {
-        data: updatedProducts,
-        total,
-        page: page
+      data: updatedProducts,
+      total,
+      page: page,
     };
   }
 
@@ -211,6 +208,46 @@ export class ProductService {
     return updatedProducts;
   }
 
+  async getTopSellingProducts() {
+    const salesData = await this.orderProductRepository
+      .createQueryBuilder('orderProduct')
+      .select('orderProduct.slug', 'slug')
+      .addSelect('SUM(orderProduct.quantity)', 'sold_quantity')
+      .groupBy('orderProduct.slug')
+      .orderBy('sold_quantity', 'DESC')
+      .limit(6)
+      .getRawMany();
+  
+    if (!salesData.length) {
+      const products = await this.productRepository.find({
+        relations: ['category', 'productDetails', 'discounts'],
+        take: 6,
+        order: { createdAt: 'ASC' },
+      });
+  
+      return products.map((product) => ({
+        ...product,
+        sold: 0,
+      }));
+    }
+  
+    const topProducts = await Promise.all(
+      salesData.map(async (sale) => {
+        const product = await this.productRepository.findOne({
+          where: { slug: sale.slug },
+          relations: ['category', 'productDetails', 'discounts'],
+        });
+  
+        return {
+          ...product,
+          sold: Number(sale.sold_quantity),
+        };
+      }),
+    );
+  
+    return topProducts;
+  }
+  
   async findAll() {
     return await this.productRepository.find({
       relations: {
@@ -252,7 +289,9 @@ export class ProductService {
     }
 
     await Promise.all(
-      product.productDetails.map(detail => this.productDetailsService.remove(detail.id))
+      product.productDetails.map((detail) =>
+        this.productDetailsService.remove(detail.id),
+      ),
     );
 
     const productUpdateInfo = { ...productInfo, category, slug };
