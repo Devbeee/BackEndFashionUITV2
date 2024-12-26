@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 
 export class GetAllParamsDto {
     @ApiProperty()
@@ -12,6 +12,7 @@ export class GetAllParamsDto {
     @IsNumber({  }, { message: 'Limit must be a number' })
     @IsNotEmpty({ message: 'Limit is required' })
     @Min(1, { message: 'Limit must be greater than or equal to 1' })
+    @Max(100,  { message: 'Limit must be less than or equal to 100' })
     limit: number;
 
     @ApiProperty()
