@@ -104,6 +104,10 @@ export class CartService {
       },
     });
 
+    if (!cartItems) {
+      return null;
+    }
+
     const updatedCartProducts = await Promise.all(
       cartItems.cartProducts.map(async (cartProduct) => {
         const productDetail = cartProduct.productDetail;
