@@ -83,10 +83,6 @@ export class User {
   orders: Order[];
 
   @ApiProperty()
-  @Column({ type: 'uuid', nullable: true })
-  defaultAddressId: string;
-
-  @ApiProperty()
   @OneToOne(() => Address)
   @JoinColumn({ name: 'defaultAddressId' })
   defaultAddress: Address;

@@ -1,15 +1,15 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Put, 
-  Param, 
-  Delete, 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  Param,
+  Delete,
   NotFoundException,
   BadRequestException,
   UseGuards,
-  Query
+  Query,
 } from '@nestjs/common';
 
 import { ErrorCode, Role } from '@/common/enums';
@@ -39,11 +39,9 @@ export class ProductController {
     } catch (error) {
       if (error.message === ErrorCode.PRODUCT_ALREADY_EXIST) {
         throw new BadRequestException(ErrorCode.PRODUCT_ALREADY_EXIST);
-      }
-      else if (error.message === ErrorCode.CATEGORY_NOT_FOUND) {
+      } else if (error.message === ErrorCode.CATEGORY_NOT_FOUND) {
         throw new NotFoundException(ErrorCode.CATEGORY_NOT_FOUND);
-      }
-      else {
+      } else {
         throw error;
       }
     }
@@ -56,10 +54,8 @@ export class ProductController {
   @ApiQuery({ name: 'price', required: false, type: String })
   @ApiQuery({ name: 'categoryType', required: false, type: String })
   @ApiQuery({ name: 'colorName', required: false, type: String })
-  getProductList(
-    @Query() params: GetProductListDto
-  ) {
-      return this.productService.getProductList(params);
+  getProductList(@Query() params: GetProductListDto) {
+    return this.productService.getProductList(params);
   }
 
   @Get('discounted')
@@ -67,7 +63,16 @@ export class ProductController {
     try {
       return this.productService.getDiscountedProducts();
     } catch (error) {
-      throw error
+      throw error;
+    }
+  }
+
+  @Get('top-selling')
+  async getTopSellingProducts() {
+    try {
+      return this.productService.getTopSellingProducts();
+    } catch (error) {
+      throw error;
     }
   }
 
@@ -87,8 +92,7 @@ export class ProductController {
     } catch (error) {
       if (error.message === ErrorCode.PRODUCT_NOT_FOUND) {
         throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND);
-      }
-      else {
+      } else {
         throw error;
       }
     }
@@ -97,7 +101,10 @@ export class ProductController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Put(':id')
-  update(@Param('id') productId: string, @Body() updateProductDto: UpdateProductDto) {
+  update(
+    @Param('id') productId: string,
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
     try {
       return this.productService.update(productId, updateProductDto);
     } catch (error) {
@@ -106,8 +113,7 @@ export class ProductController {
       }
       if (error.message === ErrorCode.CATEGORY_NOT_FOUND) {
         throw new NotFoundException(ErrorCode.CATEGORY_NOT_FOUND);
-      }
-      else {
+      } else {
         throw error;
       }
     }
@@ -122,8 +128,7 @@ export class ProductController {
     } catch (error) {
       if (error.message === ErrorCode.PRODUCT_NOT_FOUND) {
         throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND);
-      }
-      else {
+      } else {
         throw error;
       }
     }
