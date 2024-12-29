@@ -336,4 +336,16 @@ export class ProductService {
 
     return false;
   }
+
+  async findOneBySlug(slug: string) {
+    const product = await this.productRepository.findOne({
+      where: { slug },
+      relations: ['productDetails', 'category']
+    })
+
+    if (!product) {
+      throw new Error(ErrorCode.PRODUCT_NOT_FOUND);
+    }
+    return product;
+  }
 }

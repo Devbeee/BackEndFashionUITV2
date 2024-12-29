@@ -128,4 +128,18 @@ export class ProductController {
       }
     }
   }
+
+  @Get('slug/:slug')
+  findOneBySlug(@Param('slug') slug : string) {
+    try {
+      return this.productService.findOneBySlug(slug);
+    }
+    catch (error) {
+      if (error.message === ErrorCode.PRODUCT_NOT_FOUND) {
+        throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND);
+      } else {
+        throw error;
+      }
+    }
+  }
 }
