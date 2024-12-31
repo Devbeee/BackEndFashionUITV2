@@ -1,8 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-
-import { Cart } from '@/modules/cart/entities/cart.entity';
-import { ProductDetail } from '@/modules/product-details/entities/product-detail.entity';
-
 import {
   Column,
   CreateDateColumn,
@@ -11,6 +7,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { Category } from '@/modules/category/entities/category.entity';
+import { Cart } from '@/modules/cart/entities/cart.entity';
+import { ProductDetail } from '@/modules/product-details/entities/product-detail.entity';
 
 @Entity()
 export class CartProduct {
@@ -25,6 +25,10 @@ export class CartProduct {
   @ApiProperty()
   @ManyToOne(() => ProductDetail, { onDelete: 'CASCADE' })
   productDetail: ProductDetail;
+
+  @ApiProperty({ type: () => Category })
+  @ManyToOne(() => Category)
+  category: Category;
 
   @ApiProperty()
   @ManyToOne(() => Cart, (cart) => cart.cartProducts)

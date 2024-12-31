@@ -4,9 +4,10 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import Stripe from 'stripe';
 
-import { Order } from '@/modules/order/entities/order.entity';
-import { OrderService } from '@/modules/order/order.service';
+import { Order } from '@/modules/order/entities';
 import { User } from '@/modules/user/entities/user.entity';
+
+import { OrderService } from '@/modules/order/order.service';
 
 import {
   OrderStatus,

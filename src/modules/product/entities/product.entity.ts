@@ -1,8 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-
-import { Category } from '@/modules/category/entities/category.entity';
-import { ProductDetail } from '@/modules/product-details/entities/product-detail.entity';
-import { Discount } from '@/modules/discount/entities/discount.entity';
 import {
   Column,
   CreateDateColumn,
@@ -12,6 +8,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { Category } from '@/modules/category/entities/category.entity';
+import { ProductDetail } from '@/modules/product-details/entities/product-detail.entity';
+import { Discount } from '@/modules/discount/entities/discount.entity';
 
 @Entity()
 export class Product {
@@ -51,7 +51,7 @@ export class Product {
   @OneToMany(() => ProductDetail, (ProductDetail) => ProductDetail.product)
   productDetails: ProductDetail[];
 
-  @ApiProperty()
+  @ApiProperty({ type: () => Category })
   @ManyToOne(() => Category, (category) => category.products)
   category: Category;
 

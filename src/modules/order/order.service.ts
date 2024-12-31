@@ -2,18 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Brackets, DataSource, In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Order } from '@/modules/order/entities/order.entity';
-import { User } from '@/modules/user/entities/user.entity';
-import { OrderProduct } from '@/modules/order/entities/order-product.entity';
-import { ProductDetail } from '@/modules/product-details/entities/product-detail.entity';
-import { CartService } from '@/modules/cart/cart.service';
-import {
-  ErrorCode,
-  FilterOptions,
-  OrderStatus,
-  PaymentStatus,
-  SortOptions,
-} from '@/common/enums';
 import {
   CancelOrdersDto,
   CreateOrderDto,
@@ -24,6 +12,20 @@ import {
   UpdateOrderDto,
 } from '@/modules/order/dto';
 
+import { Order, OrderAddress, OrderProduct } from '@/modules/order/entities';
+import { User } from '@/modules/user/entities/user.entity';
+import { ProductDetail } from '@/modules/product-details/entities/product-detail.entity';
+
+import { CartService } from '@/modules/cart/cart.service';
+
+import {
+  ErrorCode,
+  FilterOptions,
+  OrderStatus,
+  PaymentStatus,
+  SortOptions,
+} from '@/common/enums';
+
 @Injectable()
 export class OrderService {
   constructor(
@@ -32,6 +34,9 @@ export class OrderService {
 
     @InjectRepository(OrderProduct)
     private readonly orderProductRepository: Repository<OrderProduct>,
+
+    @InjectRepository(OrderAddress)
+    private readonly orderAddressRepository: Repository<OrderAddress>,
 
     @InjectRepository(ProductDetail)
     private readonly productDetailRepository: Repository<ProductDetail>,
@@ -46,9 +51,12 @@ export class OrderService {
     await queryRunner.startTransaction();
 
     try {
+      const newOrderAddress = this.orderAddressRepository.create(order.address);
+      await queryRunner.manager.save(newOrderAddress);
+
       const newOrder = this.orderRepository.create({
         user,
-        address: order.address,
+        address: newOrderAddress,
         message: order.message,
         paymentMethod: order.paymentMethod,
         totalPrice: order.totalPrice,
@@ -68,20 +76,25 @@ export class OrderService {
             price: true,
             slug: true,
             discount: true,
+            category: {
+              id: true,
+            },
           },
         },
-        relations: { product: true },
+        relations: {
+          product: {
+            category: true,
+          },
+        },
         where: {
           id: In(order.products.map((product) => product.productDetailId)),
         },
       });
-
       const newOrderProducts = [];
       for (const product of order.products) {
         const orderProductDetail = productDetails.find(
           (productDetail) => productDetail.id === product.productDetailId,
         );
-
         if (
           !orderProductDetail ||
           orderProductDetail.stock < product.quantity
@@ -101,6 +114,9 @@ export class OrderService {
             quantity: product.quantity,
             discount: orderProductDetail.product.discount,
             order: newOrder,
+            category: {
+              id: orderProductDetail.product.category.id,
+            },
           }),
         );
         orderProductDetail.stock = orderProductDetail.stock - product.quantity;
