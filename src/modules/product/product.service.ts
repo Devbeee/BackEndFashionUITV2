@@ -108,7 +108,9 @@ export class ProductService {
       params;
 
     const priceArray = price ? price.split(',') : [];
-    const categoryTypeArray = categoryType ? categoryType.split(',') : [];
+    const categoryTypeArray = categoryType 
+      ? categoryType.split(',').map(item => item.trim().toLowerCase()) 
+      : [];
     const colorNameArray = colorName ? colorName.split(',') : [];
 
     const filterPrice = this.getFilterPrice(priceArray);
@@ -141,7 +143,7 @@ export class ProductService {
 
     if (categoryGender) {
       queryBuilder.andWhere('category.gender = :gender', {
-        gender: categoryGender,
+        gender: categoryGender.toLowerCase(),
       });
     }
 
