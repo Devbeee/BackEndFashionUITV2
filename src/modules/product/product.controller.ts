@@ -24,6 +24,7 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { GetProductListDto } from './dto/get-product-list.dto';
+import { GetRelatedProductsDto } from './dto/get-related-products.dto';
 
 @ApiTags('Product')
 @Controller('product')
@@ -82,6 +83,25 @@ export class ProductController {
       return this.productService.findAll();
     } catch (error) {
       throw error;
+    }
+  }
+
+  @Get('related')
+  @ApiQuery({ name: 'page', required: true, type: Number })
+  @ApiQuery({ name: 'limit', required: true, type: Number })
+  @ApiQuery({ name: 'productId', required: false, type: String })
+  @ApiQuery({ name: 'categoryGender', required: false, type: String })
+  @ApiQuery({ name: 'categoryType', required: false, type: String })
+  async findRelatedProducts(@Query() params : GetRelatedProductsDto) {
+    try {
+      return this.productService.findRelatedProducts(params);
+    }
+    catch (error) {
+      if (error.message === ErrorCode.PRODUCT_NOT_FOUND) {
+        throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND);
+      } else {
+        throw error;
+      }
     }
   }
 
