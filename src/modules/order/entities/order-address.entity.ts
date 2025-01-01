@@ -3,16 +3,11 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 import { ApiProperty } from '@nestjs/swagger';
-
-import { User } from '@/modules/user/entities/user.entity';
 
 @Entity()
 export class OrderAddress {

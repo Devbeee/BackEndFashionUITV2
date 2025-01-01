@@ -78,49 +78,45 @@ export class AddressService {
     }
   }
   async deleteAddress(deleteAddressDto: DeleteAddressDto, user: User) {
-    try {
-      const userAddress = await this.userRepository.findOne({
-        select: {
-          defaultAddress: {
-            id: true,
-          },
+    const userAddress = await this.userRepository.findOne({
+      select: {
+        defaultAddress: {
+          id: true,
         },
-        relations: ['defaultAddress'],
+      },
+      relations: ['defaultAddress'],
+      where: {
+        id: user.id,
+      },
+    });
+    if (userAddress?.defaultAddress?.id == deleteAddressDto.id) {
+      const addresses = await this.addressRepository.find({
+        select: {
+          id: true,
+        },
         where: {
-          id: user.id,
+          owner: {
+            id: user.id,
+          },
         },
       });
-      if (userAddress?.defaultAddress?.id == deleteAddressDto.id) {
-        const addresses = await this.addressRepository.find({
-          select: {
-            id: true,
-          },
-          where: {
-            owner: {
-              id: user.id,
-            },
-          },
-        });
-        if (addresses.length >= 2) {
-          for (const address of addresses) {
-            if (address.id !== deleteAddressDto.id) {
-              await this.userRepository.update(
-                { id: user.id },
-                { defaultAddress: { id: address.id } },
-              );
-              break;
-            }
+      if (addresses.length >= 2) {
+        for (const address of addresses) {
+          if (address.id !== deleteAddressDto.id) {
+            await this.userRepository.update(
+              { id: user.id },
+              { defaultAddress: { id: address.id } },
+            );
+            break;
           }
-        } else {
-          await this.userRepository.update(
-            { id: user.id },
-            { defaultAddress: null },
-          );
         }
+      } else {
+        await this.userRepository.update(
+          { id: user.id },
+          { defaultAddress: null },
+        );
       }
-      this.addressRepository.delete({ id: deleteAddressDto.id });
-    } catch (error) {
-      throw new Error(ErrorCode.ADDRESS_NOT_FOUND);
     }
+    return this.addressRepository.delete({ id: deleteAddressDto.id });
   }
 }
