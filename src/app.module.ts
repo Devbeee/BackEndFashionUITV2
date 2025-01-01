@@ -25,6 +25,7 @@ import { OrderModule } from '@/modules/order/order.module';
 import { StripeModule } from './modules/stripe/stripe.module';
 import { DiscountModule } from './modules/discount/discount.module';
 import { StoreSystemModule } from './modules/store-system/store-system.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { StoreSystemModule } from './modules/store-system/store-system.module';
     StripeModule,
     DiscountModule,
     StoreSystemModule,
+    DashboardModule,
   ],
 
   providers: [

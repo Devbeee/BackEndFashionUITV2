@@ -1,8 +1,3 @@
-import { Role } from '@/common/enums';
-import { Contact } from '@/modules/contact/entities/contact.entity';
-import { Blog } from '@/modules/blog/entities/blog.entity';
-import { Address } from '@/modules/address/entities/address.entity';
-
 import { ApiProperty } from '@nestjs/swagger';
 
 import {
@@ -16,7 +11,13 @@ import {
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { Order } from '@/modules/order/entities/order.entity';
+
+import { Order } from '@/modules/order/entities';
+import { Contact } from '@/modules/contact/entities/contact.entity';
+import { Blog } from '@/modules/blog/entities/blog.entity';
+import { Address } from '@/modules/address/entities/address.entity';
+
+import { Role } from '@/common/enums';
 
 @Entity()
 export class User {

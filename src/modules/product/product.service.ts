@@ -1,8 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
-import { ProductDetailsService } from '@/modules/product-details/product-details.service';
-import { CategoryService } from '@/modules/category/category.service';
-import { Discount } from '@/modules/discount/entities/discount.entity';
+import { Repository } from 'typeorm';
 
 import { convertToSlug } from '@/utils';
 
@@ -13,14 +11,17 @@ import {
 } from '@/common/enums';
 
 import { Product } from './entities/product.entity';
+import { Discount } from '@/modules/discount/entities/discount.entity';
+import { OrderProduct } from '../order/entities';
 
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { GetProductListDto } from './dto/get-product-list.dto';
 import { GetBySearchQueryDto } from './dto/get-by-search-query.dto';
+import { GetRelatedProductsDto } from './dto/get-related-products.dto';
 
-import { Repository } from 'typeorm';
-import { OrderProduct } from '../order/entities/order-product.entity';
+import { ProductDetailsService } from '@/modules/product-details/product-details.service';
+import { CategoryService } from '@/modules/category/category.service';
 
 @Injectable()
 export class ProductService {
@@ -253,37 +254,37 @@ export class ProductService {
       .orderBy('sold_quantity', 'DESC')
       .limit(6)
       .getRawMany();
-  
+
     if (!salesData.length) {
       const products = await this.productRepository.find({
         relations: ['category', 'productDetails', 'discounts'],
         take: 6,
         order: { createdAt: 'ASC' },
       });
-  
+
       return products.map((product) => ({
         ...product,
         sold: 0,
       }));
     }
-  
+
     const topProducts = await Promise.all(
       salesData.map(async (sale) => {
         const product = await this.productRepository.findOne({
           where: { slug: sale.slug },
           relations: ['category', 'productDetails', 'discounts'],
         });
-  
+
         return {
           ...product,
           sold: Number(sale.sold_quantity),
         };
       }),
     );
-  
+
     return topProducts;
   }
-  
+
   async findAll() {
     return await this.productRepository.find({
       relations: {
@@ -410,5 +411,60 @@ export class ProductService {
     }
 
     return false;
+  }
+
+  async findOneBySlug(slug: string) {
+    const product = await this.productRepository.findOne({
+      where: { slug },
+      relations: ['productDetails', 'category']
+    })
+
+    if (!product) {
+      throw new Error(ErrorCode.PRODUCT_NOT_FOUND);
+    }
+    return product;
+  }
+
+  async findRelatedProducts(params: GetRelatedProductsDto) {
+    const { page, limit, productId, categoryGender, categoryType } = params;
+
+    const queryBuilder = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.productDetails', 'productDetails')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.discounts', 'discounts');
+
+    if (productId) {
+      queryBuilder.andWhere('product.id != :productId', { productId });
+    }
+
+    if (categoryGender) {
+      queryBuilder.andWhere('category.gender = :gender', {
+        gender: categoryGender,
+      });
+    }
+
+    if (categoryType) {
+      queryBuilder.andWhere('category.type = :categoryType', {
+        categoryType: categoryType,
+      });
+    }
+
+    queryBuilder.skip((page - 1) * limit).take(limit);
+
+    const [products, total] = await queryBuilder.getManyAndCount();
+
+    const updatedProducts = await Promise.all(
+      products.map(async (product) => {
+        const effectiveDiscount = await this.getEffectiveDiscount(product.id);
+        return { ...product, discount: effectiveDiscount };
+      }),
+    );
+
+    return {
+      data: updatedProducts,
+      total,
+      page: page,
+    };
   }
 }

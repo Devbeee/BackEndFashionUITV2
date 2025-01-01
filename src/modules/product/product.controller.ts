@@ -25,6 +25,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { GetProductListDto } from './dto/get-product-list.dto';
 import { GetBySearchQueryDto } from './dto/get-by-search-query.dto';
+import { GetRelatedProductsDto } from './dto/get-related-products.dto';
 
 @ApiTags('Product')
 @Controller('product')
@@ -93,6 +94,25 @@ export class ProductController {
     }
   }
 
+  @Get('related')
+  @ApiQuery({ name: 'page', required: true, type: Number })
+  @ApiQuery({ name: 'limit', required: true, type: Number })
+  @ApiQuery({ name: 'productId', required: false, type: String })
+  @ApiQuery({ name: 'categoryGender', required: false, type: String })
+  @ApiQuery({ name: 'categoryType', required: false, type: String })
+  async findRelatedProducts(@Query() params : GetRelatedProductsDto) {
+    try {
+      return this.productService.findRelatedProducts(params);
+    }
+    catch (error) {
+      if (error.message === ErrorCode.PRODUCT_NOT_FOUND) {
+        throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND);
+      } else {
+        throw error;
+      }
+    }
+  }
+
   @Get(':id')
   findOne(@Param('id') productId: string) {
     try {
@@ -134,6 +154,20 @@ export class ProductController {
     try {
       return this.productService.remove(productId);
     } catch (error) {
+      if (error.message === ErrorCode.PRODUCT_NOT_FOUND) {
+        throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  @Get('slug/:slug')
+  findOneBySlug(@Param('slug') slug : string) {
+    try {
+      return this.productService.findOneBySlug(slug);
+    }
+    catch (error) {
       if (error.message === ErrorCode.PRODUCT_NOT_FOUND) {
         throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND);
       } else {

@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Address1735407007994 implements MigrationInterface {
-  name = 'Address1735407007994';
+export class OrderAddress1735408206512 implements MigrationInterface {
+  name = 'OrderAddress1735408206512';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TABLE "address" (
+      `CREATE TABLE "order_address" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(), 
         "name" character varying NOT NULL, 
         "province" character varying NOT NULL, 
@@ -17,16 +17,13 @@ export class Address1735407007994 implements MigrationInterface {
         "addressDetail" character varying NOT NULL, 
         "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), 
         "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), 
-        "deletedAt" TIMESTAMP WITH TIME ZONE, "owner" uuid, 
-        CONSTRAINT "PK_d92de1f82754668b5f5f5dd4fd5" PRIMARY KEY ("id")
+        "deletedAt" TIMESTAMP WITH TIME ZONE, 
+        CONSTRAINT "PK_f07603e96b068aae820d4590270" PRIMARY KEY ("id")
       )`,
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE "address" DROP CONSTRAINT "FK_07b1b3a3084ea2cd82495739482"`,
-    );
-    await queryRunner.query(`DROP TABLE "address"`);
+    await queryRunner.query(`DROP TABLE "order_address"`);
   }
 }

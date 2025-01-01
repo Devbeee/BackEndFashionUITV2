@@ -5,17 +5,17 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { OrderStatus, PaymentMethod, PaymentStatus } from '@/common/enums';
-import { Address } from '@/modules/address/entities/address.entity';
-import { Type } from 'class-transformer';
+
+import { OrderAddress } from '@/modules/order/entities';
 
 export class CreateOrderDto {
   @ApiProperty()
   @IsNotEmpty({ message: 'Delivery address is required' })
-  address: Address;
+  address: OrderAddress;
 
   @ApiProperty()
   @IsEnum(PaymentStatus, {
