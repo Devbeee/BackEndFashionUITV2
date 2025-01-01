@@ -10,7 +10,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 
 import { Repository } from 'typeorm';
 
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 import { LRUCache } from 'lru-cache';
 
