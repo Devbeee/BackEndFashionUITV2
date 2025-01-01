@@ -17,6 +17,7 @@ import { OrderProduct } from '../order/entities';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { GetProductListDto } from './dto/get-product-list.dto';
+import { GetRelatedProductsDto } from './dto/get-related-products.dto';
 
 import { ProductDetailsService } from '@/modules/product-details/product-details.service';
 import { CategoryService } from '@/modules/category/category.service';
@@ -376,5 +377,60 @@ export class ProductService {
     }
 
     return false;
+  }
+
+  async findOneBySlug(slug: string) {
+    const product = await this.productRepository.findOne({
+      where: { slug },
+      relations: ['productDetails', 'category']
+    })
+
+    if (!product) {
+      throw new Error(ErrorCode.PRODUCT_NOT_FOUND);
+    }
+    return product;
+  }
+
+  async findRelatedProducts(params: GetRelatedProductsDto) {
+    const { page, limit, productId, categoryGender, categoryType } = params;
+
+    const queryBuilder = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.productDetails', 'productDetails')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.discounts', 'discounts');
+
+    if (productId) {
+      queryBuilder.andWhere('product.id != :productId', { productId });
+    }
+
+    if (categoryGender) {
+      queryBuilder.andWhere('category.gender = :gender', {
+        gender: categoryGender,
+      });
+    }
+
+    if (categoryType) {
+      queryBuilder.andWhere('category.type = :categoryType', {
+        categoryType: categoryType,
+      });
+    }
+
+    queryBuilder.skip((page - 1) * limit).take(limit);
+
+    const [products, total] = await queryBuilder.getManyAndCount();
+
+    const updatedProducts = await Promise.all(
+      products.map(async (product) => {
+        const effectiveDiscount = await this.getEffectiveDiscount(product.id);
+        return { ...product, discount: effectiveDiscount };
+      }),
+    );
+
+    return {
+      data: updatedProducts,
+      total,
+      page: page,
+    };
   }
 }
