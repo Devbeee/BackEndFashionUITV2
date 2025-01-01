@@ -63,7 +63,7 @@ export class OrderProduct {
   category: Category;
 
   @ApiProperty({ type: () => Order })
-  @ManyToOne(() => Order, (order) => order.products)
+  @ManyToOne(() => Order, (order) => order.products, { onDelete: 'RESTRICT' })
   @JoinColumn()
   order: Order;
 
