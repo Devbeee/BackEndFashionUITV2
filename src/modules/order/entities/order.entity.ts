@@ -1,9 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
-
-import { Address } from '@/modules/address/entities/address.entity';
-import { User } from '@/modules/user/entities/user.entity';
-import { OrderStatus, PaymentMethod, PaymentStatus } from '@/common/enums';
-
 import {
   Column,
   CreateDateColumn,
@@ -15,7 +9,13 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { OrderProduct } from '@/modules/order/entities/order-product.entity';
+
+import { ApiProperty } from '@nestjs/swagger';
+
+import { OrderStatus, PaymentMethod, PaymentStatus } from '@/common/enums';
+
+import { OrderAddress, OrderProduct } from '@/modules/order/entities';
+import { User } from '@/modules/user/entities/user.entity';
 
 @Entity()
 export class Order {
@@ -29,9 +29,9 @@ export class Order {
   user: User;
 
   @ApiProperty()
-  @ManyToOne(() => Address)
+  @ManyToOne(() => OrderAddress)
   @JoinColumn()
-  address: Address;
+  address: OrderAddress;
 
   @ApiProperty()
   @Column({ default: PaymentStatus.Unpaid })

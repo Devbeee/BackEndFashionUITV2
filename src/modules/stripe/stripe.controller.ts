@@ -73,7 +73,7 @@ export class StripeController {
   @HttpCode(200)
   @ApiBody({
     description: 'Data to create stripe url',
-    type: CreateStripeUrlDto,
+    type: VerifyPaymentDto,
   })
   async verifyPayment(@Param() verifyPaymentDto: VerifyPaymentDto) {
     try {

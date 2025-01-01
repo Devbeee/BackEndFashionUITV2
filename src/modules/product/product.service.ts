@@ -1,8 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
-import { ProductDetailsService } from '@/modules/product-details/product-details.service';
-import { CategoryService } from '@/modules/category/category.service';
-import { Discount } from '@/modules/discount/entities/discount.entity';
+import { Repository } from 'typeorm';
 
 import { convertToSlug } from '@/utils';
 
@@ -13,13 +11,15 @@ import {
 } from '@/common/enums';
 
 import { Product } from './entities/product.entity';
+import { Discount } from '@/modules/discount/entities/discount.entity';
+import { OrderProduct } from '../order/entities';
 
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { GetProductListDto } from './dto/get-product-list.dto';
 
-import { Repository } from 'typeorm';
-import { OrderProduct } from '../order/entities/order-product.entity';
+import { ProductDetailsService } from '@/modules/product-details/product-details.service';
+import { CategoryService } from '@/modules/category/category.service';
 
 @Injectable()
 export class ProductService {
@@ -219,37 +219,37 @@ export class ProductService {
       .orderBy('sold_quantity', 'DESC')
       .limit(6)
       .getRawMany();
-  
+
     if (!salesData.length) {
       const products = await this.productRepository.find({
         relations: ['category', 'productDetails', 'discounts'],
         take: 6,
         order: { createdAt: 'ASC' },
       });
-  
+
       return products.map((product) => ({
         ...product,
         sold: 0,
       }));
     }
-  
+
     const topProducts = await Promise.all(
       salesData.map(async (sale) => {
         const product = await this.productRepository.findOne({
           where: { slug: sale.slug },
           relations: ['category', 'productDetails', 'discounts'],
         });
-  
+
         return {
           ...product,
           sold: Number(sale.sold_quantity),
         };
       }),
     );
-  
+
     return topProducts;
   }
-  
+
   async findAll() {
     return await this.productRepository.find({
       relations: {

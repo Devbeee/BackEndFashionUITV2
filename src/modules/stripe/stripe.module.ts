@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { Order } from '@/modules/order/entities/order.entity';
+import { Order } from '@/modules/order/entities';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { OrderModule } from '@/modules/order/order.module';
 import { StripeController } from './stripe.controller';

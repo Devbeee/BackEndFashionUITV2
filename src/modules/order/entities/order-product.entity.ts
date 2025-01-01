@@ -1,7 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Size } from '@/common/enums';
-
 import {
   Column,
   CreateDateColumn,
@@ -12,7 +10,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Order } from '@/modules/order/entities/order.entity';
+
+import { Size } from '@/common/enums';
+
+import { Order } from '@/modules/order/entities';
+import { Category } from '@/modules/category/entities/category.entity';
 
 @Entity()
 export class OrderProduct {
@@ -55,6 +57,10 @@ export class OrderProduct {
   @ApiProperty()
   @Column()
   discount: number;
+
+  @ApiProperty({ type: () => Category })
+  @ManyToOne(() => Category)
+  category: Category;
 
   @ApiProperty({ type: () => Order })
   @ManyToOne(() => Order, (order) => order.products)

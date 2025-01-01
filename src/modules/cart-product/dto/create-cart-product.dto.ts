@@ -11,6 +11,11 @@ export class CreateCartProductDto {
   @ApiProperty()
   productDetailId: string;
 
+  @IsString({ message: 'Category ID must be a string' })
+  @IsNotEmpty({ message: 'Category ID is required' })
+  @ApiProperty()
+  categoryId: string;
+
   @IsString({ message: 'Cart ID must be a string' })
   @IsNotEmpty({ message: 'Cart ID is required' })
   @ApiProperty()
