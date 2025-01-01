@@ -24,6 +24,7 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { GetProductListDto } from './dto/get-product-list.dto';
+import { GetBySearchQueryDto } from './dto/get-by-search-query.dto';
 
 @ApiTags('Product')
 @Controller('product')
@@ -56,6 +57,13 @@ export class ProductController {
   @ApiQuery({ name: 'colorName', required: false, type: String })
   getProductList(@Query() params: GetProductListDto) {
     return this.productService.getProductList(params);
+  }
+
+  @Get('search')
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'searchQuery', required: true, type: String })
+  getProductSearch(@Query() searchQuery: GetBySearchQueryDto) {
+    return this.productService.getProductSearch(searchQuery);
   }
 
   @Get('discounted')
