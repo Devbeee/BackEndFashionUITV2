@@ -94,8 +94,6 @@ export class OrderController {
     @Param() params: { id: string },
     @Body() updateOrderDto: UpdateOrderDto,
   ) {
-    console.log(updateOrderDto);
-    console.log(params.id);
     return await this.orderService.updateOrder(params.id, updateOrderDto);
   }
   @Patch('/cancel/:id')

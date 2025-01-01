@@ -8,6 +8,7 @@ export class UserDefaultAddress1735413770049 implements MigrationInterface {
             FOREIGN KEY ("defaultAddressId") REFERENCES "address"("id") 
             ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
+
     await queryRunner.query(
       `ALTER TABLE "address" 
         ADD CONSTRAINT "FK_07b1b3a3084ea2cd82495739482" 
