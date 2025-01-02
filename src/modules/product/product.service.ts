@@ -17,6 +17,7 @@ import { OrderProduct } from '../order/entities';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { GetProductListDto } from './dto/get-product-list.dto';
+import { GetBySearchQueryDto } from './dto/get-by-search-query.dto';
 import { GetRelatedProductsDto } from './dto/get-related-products.dto';
 
 import { ProductDetailsService } from '@/modules/product-details/product-details.service';
@@ -181,6 +182,39 @@ export class ProductService {
       total,
       page: page,
     };
+  }
+
+  async getProductSearch(searchQuery: GetBySearchQueryDto) {
+    const limit = searchQuery.page ? 16 : 4;
+    const queryBuilder = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.productDetails', 'productDetails')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.discounts', 'discounts');
+  
+    queryBuilder.andWhere('product.name ILIKE :searchQuery', { searchQuery: `%${searchQuery.searchQuery}%` });
+
+    if (searchQuery.page) {
+      queryBuilder.skip((searchQuery.page - 1) * limit).take(limit);
+    } else {
+      queryBuilder.take(limit);
+    }
+
+    const [products, total] = await queryBuilder.getManyAndCount();
+
+    const updatedProducts = await Promise.all(
+      products.map(async (product) => {
+        const effectiveDiscount = await this.getEffectiveDiscount(product.id);
+        return { ...product, discount: effectiveDiscount };
+      }),
+    );
+
+    return {
+      data: updatedProducts,
+      total,
+      page: searchQuery.page,
+    };
+    
   }
 
   async getDiscountedProducts(): Promise<Product[]> {
