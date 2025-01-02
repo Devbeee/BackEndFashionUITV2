@@ -110,8 +110,8 @@ export class ProductService {
       params;
 
     const priceArray = price ? price.split(',') : [];
-    const categoryTypeArray = categoryType 
-      ? categoryType.split(',').map(item => item.trim().toLowerCase()) 
+    const categoryTypeArray = categoryType
+      ? categoryType.split(',').map((item) => item.trim().toLowerCase())
       : [];
     const colorNameArray = colorName ? colorName.split(',') : [];
 
@@ -191,8 +191,10 @@ export class ProductService {
       .leftJoinAndSelect('product.productDetails', 'productDetails')
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('product.discounts', 'discounts');
-  
-    queryBuilder.andWhere('product.name ILIKE :searchQuery', { searchQuery: `%${searchQuery.searchQuery}%` });
+
+    queryBuilder.andWhere('product.name ILIKE :searchQuery', {
+      searchQuery: `%${searchQuery.searchQuery}%`,
+    });
 
     if (searchQuery.page) {
       queryBuilder.skip((searchQuery.page - 1) * limit).take(limit);
@@ -214,18 +216,18 @@ export class ProductService {
       total,
       page: searchQuery.page,
     };
-    
   }
 
-  async getDiscountedProducts(): Promise<Product[]> {
+  async getDiscountedProducts() {
     const now = new Date();
     const currentDate = now.toISOString().split('T')[0];
 
     const products = await this.productRepository
-      .createQueryBuilder('product')
-      .leftJoinAndSelect('product.discounts', 'discounts')
-      .leftJoinAndSelect('product.productDetails', 'productDetails')
-      .getMany();
+    .createQueryBuilder('product')
+    .leftJoinAndSelect('product.category', 'category')
+    .leftJoinAndSelect('product.discounts', 'discounts')
+    .leftJoinAndSelect('product.productDetails', 'productDetails')
+    .getMany();
 
     const discountProducts = products.filter((product) =>
       product.discounts.some(
@@ -262,7 +264,14 @@ export class ProductService {
         order: { createdAt: 'ASC' },
       });
 
-      return products.map((product) => ({
+      const updatedProducts = await Promise.all(
+        products.map(async (product) => {
+          const effectiveDiscount = await this.getEffectiveDiscount(product.id);
+          return { ...product, discount: effectiveDiscount };
+        }),
+      );
+
+      return updatedProducts.map((product) => ({
         ...product,
         sold: 0,
       }));
@@ -282,7 +291,14 @@ export class ProductService {
       }),
     );
 
-    return topProducts;
+    const updatedProducts = await Promise.all(
+      topProducts.map(async (product) => {
+        const effectiveDiscount = await this.getEffectiveDiscount(product.id);
+        return { ...product, discount: effectiveDiscount };
+      }),
+    );
+
+    return updatedProducts;
   }
 
   async findAll() {
@@ -416,13 +432,14 @@ export class ProductService {
   async findOneBySlug(slug: string) {
     const product = await this.productRepository.findOne({
       where: { slug },
-      relations: ['productDetails', 'category']
-    })
+      relations: ['productDetails', 'category', 'discounts'],
+    });
 
     if (!product) {
       throw new Error(ErrorCode.PRODUCT_NOT_FOUND);
     }
-    return product;
+    const effectiveDiscount = await this.getEffectiveDiscount(product.id);
+    return { ...product, discount: effectiveDiscount };
   }
 
   async findRelatedProducts(params: GetRelatedProductsDto) {

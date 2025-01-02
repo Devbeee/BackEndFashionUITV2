@@ -18,7 +18,8 @@ import { Cart } from './entities/cart.entity';
     CartProductModule,
     AuthModule,
     UsersModule,
-    ProductModule
+    ProductModule,
+    ProductDetailsModule,
   ],
   controllers: [CartController],
   providers: [CartService],
