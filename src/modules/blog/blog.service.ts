@@ -88,6 +88,12 @@ export class BlogService {
 
     async createBlog (blog : CreateBlogDto, userId : string) : Promise<Blog> {
         const slug = convertToSlug(blog.title);
+        const existedBlog = await this.blogRepository.findOne({
+            where: {slug: slug},
+        })
+        if (existedBlog) {
+            throw new Error(ErrorCode.BLOG_ALREADY_EXISTS);
+        }
         const newBlog = this.blogRepository.create({...blog, slug, userId});
         return await this.blogRepository.save(newBlog);
     }
@@ -104,6 +110,12 @@ export class BlogService {
         existedBlog.content = blog.content;
         existedBlog.coverImage = blog.coverImage;
         existedBlog.slug = convertToSlug(blog.title);
+        const duplicatedBlog = await this.blogRepository.findOne({
+            where: {slug: existedBlog.slug},
+        })
+        if (duplicatedBlog && duplicatedBlog.id !== existedBlog.id) {
+            throw new Error(ErrorCode.BLOG_ALREADY_EXISTS);
+        }
         return await this.blogRepository.save(existedBlog);
     }
 
