@@ -7,6 +7,7 @@ import { ErrorCode, UpdateQuantityAction } from '@/common/enums';
 import { UsersService } from '@/modules/user/user.service';
 import { UpdateCartProductDto } from '@/modules/cart-product/dto/update-cart-product.dto';
 import { CartProductService } from '@/modules/cart-product/cart-product.service';
+import { ProductDetailsService } from '@/modules/product-details/product-details.service';
 
 import { Cart } from './entities/cart.entity';
 import { CreateCartDto } from './dto/create-cart.dto';
@@ -20,11 +21,20 @@ export class CartService {
     private readonly cartProductService: CartProductService,
     private readonly usersService: UsersService,
     private readonly productService: ProductService,
+    private readonly productDetailsService: ProductDetailsService,
   ) {}
   async create(userId: string, createCartDto: CreateCartDto) {
     const user = await this.usersService.findById(userId);
     if (!user) {
       throw new Error(ErrorCode.USER_NOT_FOUND);
+    }
+
+    const productDetail = await this.productDetailsService.findOne(
+      createCartDto.cartProduct.productDetailId,
+    );
+
+    if (productDetail.stock < createCartDto.cartProduct.quantity) {
+      throw new Error(ErrorCode.OUT_OF_STOCK);
     }
 
     const existingCart = await this.findByUserId(userId);
