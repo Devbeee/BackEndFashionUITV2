@@ -25,6 +25,7 @@ import {
   PaymentStatus,
   SortOptions,
 } from '@/common/enums';
+import { ProductService } from '@/modules/product/product.service';
 
 @Injectable()
 export class OrderService {
@@ -42,6 +43,8 @@ export class OrderService {
     private readonly productDetailRepository: Repository<ProductDetail>,
 
     private readonly cartService: CartService,
+    private readonly productService: ProductService,
+
     private readonly connection: DataSource,
   ) {}
   async create(order: CreateOrderDto, user: User) {
@@ -72,6 +75,7 @@ export class OrderService {
           stock: true,
           imgUrl: true,
           product: {
+            id: true,
             name: true,
             price: true,
             slug: true,
@@ -102,6 +106,11 @@ export class OrderService {
           throw new Error(ErrorCode.OUT_OF_STOCK);
         }
 
+        const effectiveDiscount =
+          await this.productService.getEffectiveDiscount(
+            orderProductDetail.product.id,
+          );
+
         newOrderProducts.push(
           this.orderProductRepository.create({
             name: orderProductDetail.product.name,
@@ -112,7 +121,7 @@ export class OrderService {
             color: orderProductDetail.color,
             imgUrl: orderProductDetail.imgUrl,
             quantity: product.quantity,
-            discount: orderProductDetail.product.discount,
+            discount: effectiveDiscount,
             order: newOrder,
             category: {
               id: orderProductDetail.product.category.id,
