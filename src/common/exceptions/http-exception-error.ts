@@ -77,4 +77,9 @@ export const exceptionCase = {
     message: 'Discount is not found.',
     errorCode: ErrorCode.DISCOUNT_NOT_FOUND,
   },
+  [ErrorCode.BLOG_ALREADY_EXISTS]: {
+    status: HttpStatus.BAD_REQUEST,
+    message: 'Blog already exists.',
+    errorCode: ErrorCode.BLOG_ALREADY_EXISTS,
+  },
 };

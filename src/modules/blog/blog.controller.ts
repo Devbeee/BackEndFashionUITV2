@@ -1,4 +1,5 @@
 import { 
+    BadRequestException,
     Body, 
     Controller, 
     Delete, 
@@ -129,7 +130,11 @@ export class BlogController {
             handleDataResponse('Blog created successfully!');
         }
         catch (error) {
-            throw error;
+            if (error.message === ErrorCode.BLOG_ALREADY_EXISTS) {
+                throw new BadRequestException(ErrorCode.BLOG_ALREADY_EXISTS);
+            } else {
+                throw error;
+            }
         }
     }
     
@@ -152,6 +157,9 @@ export class BlogController {
         catch (error) {
             if (error.message === ErrorCode.BLOG_NOT_FOUND) {
                 throw new NotFoundException(ErrorCode.BLOG_NOT_FOUND);
+            } else 
+            if (error.message === ErrorCode.BLOG_ALREADY_EXISTS) {
+                throw new BadRequestException(ErrorCode.BLOG_ALREADY_EXISTS);
             } else {
                 throw error;
             }
